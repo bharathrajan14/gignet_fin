@@ -1,0 +1,30 @@
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+export async function connectDB() {
+  const uri = process.env.MONGODB_URI;
+
+  if (uri) {
+    try {
+      await mongoose.connect(uri);
+      console.log(`[Database] Connected to MongoDB Atlas / External: ${mongoose.connection.host}`);
+      return;
+    } catch (err) {
+      console.warn(`[Database] Failed to connect to MONGODB_URI: ${err.message}. Falling back to Memory Server...`);
+    }
+  }
+
+  // Graceful fallback to mongodb-memory-server for local SIH demo & offline runs
+  try {
+    const { MongoMemoryServer } = await import('mongodb-memory-server');
+    const mongod = await MongoMemoryServer.create();
+    const memUri = mongod.getUri();
+    await mongoose.connect(memUri);
+    console.log(`[Database] Connected to In-Memory MongoDB (${memUri}) for seamless zero-setup demo.`);
+  } catch (err) {
+    console.error(`[Database] Critical: Could not connect to any MongoDB instance:`, err);
+    process.exit(1);
+  }
+}

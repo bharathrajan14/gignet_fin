@@ -1,0 +1,7 @@
+{
+  "name": "@gignet/shared",
+  "version": "1.0.0",
+  "description": "Shared contracts, enums and types for GIGNET",
+  "main": "contracts.js",
+  "type": "module"
+}

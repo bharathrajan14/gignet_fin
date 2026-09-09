@@ -1,0 +1,370 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../services/api';
+import { useSocket } from '../context/SocketContext';
+import { LeafletMap } from '../components/LeafletMap';
+import {
+  ShieldCheck,
+  MapPin,
+  Clock,
+  Phone,
+  CheckCircle,
+  CreditCard,
+  Star,
+  Zap,
+  Navigation,
+  Loader2
+} from 'lucide-react';
+
+export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted }) {
+  const [booking, setBooking] = useState(initialBooking);
+  const [invoice, setInvoice] = useState(null);
+  const [workerCoords, setWorkerCoords] = useState(null); // [lat, lon]
+  const [travelStats, setTravelStats] = useState({ remainingKm: null, etaMinutes: null });
+  const [rating, setRating] = useState(5);
+  const [feedback, setFeedback] = useState('');
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [paying, setPaying] = useState(false);
+
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (booking?._id) {
+      loadDetails();
+      if (socket) {
+        socket.emit('join:booking', booking._id);
+      }
+    }
+  }, [booking?._id, socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for worker assignment
+    socket.on('booking:worker_assigned', (data) => {
+      console.log('[Socket] Worker assigned:', data);
+      loadDetails();
+    });
+
+    // Listen for lifecycle status changes
+    socket.on('booking:status_update', (data) => {
+      console.log('[Socket] Status updated:', data);
+      setBooking((prev) => (prev ? { ...prev, status: data.status } : prev));
+      if (['COMPLETED', 'PAID'].includes(data.status)) {
+        loadDetails();
+      }
+    });
+
+    // Listen for live location tick (GPS or simulation)
+    socket.on('worker:location_tick', (data) => {
+      if (data.coordinates) {
+        setWorkerCoords([data.coordinates[1], data.coordinates[0]]); // Leaflet uses [lat, lon]
+        setTravelStats({
+          remainingKm: data.remainingKm,
+          etaMinutes: data.etaMinutes
+        });
+      }
+    });
+
+    // Listen for arrival
+    socket.on('worker:simulated_arrival', () => {
+      setBooking((prev) => (prev ? { ...prev, status: 'ARRIVED' } : prev));
+    });
+
+    // Payment confirmation
+    socket.on('payment:confirmed', () => {
+      setBooking((prev) => (prev ? { ...prev, status: 'PAID' } : prev));
+      loadDetails();
+    });
+
+    return () => {
+      socket.off('booking:worker_assigned');
+      socket.off('booking:status_update');
+      socket.off('worker:location_tick');
+      socket.off('worker:simulated_arrival');
+      socket.off('payment:confirmed');
+    };
+  }, [socket]);
+
+  const loadDetails = async () => {
+    if (!booking?._id) return;
+    try {
+      const res = await api.get(`/customer/bookings/${booking._id}`);
+      if (res.data.success) {
+        setBooking(res.data.data.booking);
+        setInvoice(res.data.data.invoice);
+      }
+    } catch (err) {
+      console.error('[ActiveBooking] Error loading details:', err);
+    }
+  };
+
+  const handlePayDemo = async () => {
+    try {
+      setPaying(true);
+      const res = await api.post('/customer/payments/demo-pay', {
+        bookingId: booking._id,
+        paymentMethod: 'DEMO_UPI'
+      });
+      if (res.data.success) {
+        setBooking((prev) => ({ ...prev, status: 'PAID' }));
+        setInvoice(res.data.data.invoice);
+      }
+    } catch (err) {
+      alert('Payment failed: ' + err.message);
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handleRatingSubmit = async () => {
+    try {
+      await api.post('/customer/ratings', {
+        bookingId: booking._id,
+        rating,
+        reviewTags: ['Punctual', 'Skilled', 'Polite'],
+        feedbackText: feedback
+      });
+      setRatingSubmitted(true);
+      if (typeof onBookingCompleted === 'function') {
+        onBookingCompleted();
+      }
+    } catch (err) {
+      alert('Rating failed: ' + err.message);
+    }
+  };
+
+  if (!booking) {
+    return (
+      <div className="p-8 text-center text-slate-400 space-y-3">
+        <MapPin className="w-12 h-12 mx-auto text-slate-300 stroke-1" />
+        <p className="font-bold text-sm text-slate-600">No active bookings right now</p>
+        <p className="text-xs text-slate-400">Book a service from the home tab to track your technician.</p>
+      </div>
+    );
+  }
+
+  const customerLatLon = booking.customerLocation?.coordinates
+    ? [booking.customerLocation.coordinates[1], booking.customerLocation.coordinates[0]]
+    : [12.9352, 77.6245];
+
+  const statusBadgeColor = {
+    DRAFT: 'bg-slate-100 text-slate-700',
+    SEARCHING: 'bg-amber-100 text-amber-800 animate-pulse',
+    OFFERED: 'bg-blue-100 text-blue-800 animate-pulse',
+    CONFIRMED: 'bg-emerald-100 text-emerald-800',
+    ON_THE_WAY: 'bg-sky-100 text-sky-800 animate-pulse',
+    ARRIVED: 'bg-purple-100 text-purple-800',
+    IN_PROGRESS: 'bg-indigo-100 text-indigo-800',
+    COMPLETED: 'bg-emerald-100 text-emerald-800 font-extrabold',
+    PAID: 'bg-teal-100 text-teal-800 font-extrabold'
+  }[booking.status] || 'bg-slate-100 text-slate-700';
+
+  return (
+    <div className="p-4 pb-24 space-y-4">
+      {/* Header Status Bar */}
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{booking.bookingNumber}</span>
+          <h2 className="font-black text-slate-900 text-base mt-0.5">{booking.serviceId?.name || 'Service Booking'}</h2>
+        </div>
+        <span className={`text-xs font-black uppercase px-3 py-1.5 rounded-xl ${statusBadgeColor}`}>
+          {booking.status.replace(/_/g, ' ')}
+        </span>
+      </div>
+
+      {/* Live State Visualizer */}
+      {booking.status === 'SEARCHING' && (
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white text-center space-y-4 shadow-xl">
+          <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-4 border-amber-500/30 animate-ping" />
+            <div className="absolute inset-2 rounded-full border-4 border-amber-500/60 animate-pulse" />
+            <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/50">
+              <Zap className="w-6 h-6 text-white fill-current" />
+            </div>
+          </div>
+          <div>
+            <h3 className="font-extrabold text-base">Progressive Worker Allocation Active</h3>
+            <p className="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
+              Scanning progressive 2dsphere radius (3km → 6km → 12km) and matching verified skills & availability.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {booking.status === 'OFFERED' && (
+        <div className="bg-blue-900 rounded-3xl p-6 text-white text-center space-y-3 shadow-xl">
+          <div className="w-14 h-14 bg-blue-600 rounded-full mx-auto flex items-center justify-center animate-bounce shadow-lg shadow-blue-500/50">
+            <Clock className="w-7 h-7 text-white" />
+          </div>
+          <h3 className="font-extrabold text-base">Candidate Worker Found!</h3>
+          <p className="text-xs text-blue-200">
+            Dispatching 45-second offer countdown to technician. Awaiting acceptance...
+          </p>
+        </div>
+      )}
+
+      {/* Map Tracking View (shown when assigned, en route, arrived, in progress) */}
+      {['CONFIRMED', 'ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS', 'COMPLETED', 'PAID'].includes(booking.status) && (
+        <div className="space-y-3">
+          <div className="relative">
+            <LeafletMap
+              customerCoords={customerLatLon}
+              workerCoords={workerCoords}
+              height="260px"
+              zoom={14}
+            />
+
+            {/* Travel Stats Overlay */}
+            {travelStats.remainingKm !== null && booking.status === 'ON_THE_WAY' && (
+              <div className="absolute top-3 left-3 right-3 z-[400] bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <Navigation className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Technician Distance</span>
+                    <p className="text-xs font-black text-slate-800">{travelStats.remainingKm} km away</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold uppercase text-slate-400">Est. Arrival</span>
+                  <p className="text-xs font-black text-blue-600">~{travelStats.etaMinutes} mins</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Assigned Worker Details Card */}
+          {booking.assignedWorkerId && (
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-md">
+                  {booking.assignedWorkerId.badgeNumber?.slice(-3) || 'W'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-extrabold text-sm text-slate-900">
+                      {booking.assignedWorkerId.userId?.email?.split('@')[0] || 'Suresh Kumar'}
+                    </h4>
+                    <span className="text-[10px] font-black bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">
+                      {booking.assignedWorkerId.badgeNumber}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                    <span className="flex items-center gap-1 font-bold text-amber-500">
+                      ★ {booking.assignedWorkerId.rating?.average || 4.9}
+                    </span>
+                    <span>•</span>
+                    <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" /> KYC Verified
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href="tel:+919876543210"
+                className="w-10 h-10 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition shadow-sm border border-emerald-200"
+              >
+                <Phone className="w-4 h-4" />
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Invoice & Payment Card (When COMPLETED or PAID) */}
+      {invoice && (
+        <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xl space-y-4 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Official Invoice</span>
+              <h3 className="font-black text-slate-900 text-sm mt-0.5">{invoice.invoiceNumber}</h3>
+            </div>
+            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
+              invoice.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+            }`}>
+              {invoice.status}
+            </span>
+          </div>
+
+          {/* Itemized Cooperative Breakdown */}
+          <div className="space-y-2 text-xs">
+            <div className="flex justify-between text-slate-600">
+              <span>Technician Direct Share (80%)</span>
+              <span className="font-bold text-slate-800">₹{invoice.breakdown.workerPayout}</span>
+            </div>
+            <div className="flex justify-between text-emerald-700 bg-emerald-50/70 p-2 rounded-xl border border-emerald-100">
+              <span className="flex items-center gap-1 font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" /> Cooperative Welfare Reserve (15%)
+              </span>
+              <span className="font-extrabold">₹{invoice.breakdown.cooperativeReserve}</span>
+            </div>
+            <div className="flex justify-between text-slate-500">
+              <span>Platform & Network Maintenance (5%)</span>
+              <span>₹{invoice.breakdown.infrastructureCut}</span>
+            </div>
+            <div className="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-100">
+              <span>Total Amount</span>
+              <span>₹{invoice.breakdown.totalAmount}</span>
+            </div>
+          </div>
+
+          {invoice.status === 'UNPAID' && (
+            <button
+              disabled={paying}
+              onClick={handlePayDemo}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 hover:from-emerald-700 hover:to-teal-700 transition"
+            >
+              {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+              <span>Pay ₹{invoice.breakdown.totalAmount} via Demo UPI</span>
+            </button>
+          )}
+
+          {invoice.status === 'PAID' && !ratingSubmitted && (
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3 mt-4">
+              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider text-center">
+                Rate Cooperative Technician
+              </h4>
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setRating(star)}
+                    className="p-1 transition hover:scale-110"
+                  >
+                    <Star
+                      className={`w-7 h-7 ${
+                        star <= rating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Share feedback on craftmanship and punctuality..."
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <button
+                onClick={handleRatingSubmit}
+                className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition"
+              >
+                Submit Review
+              </button>
+            </div>
+          )}
+
+          {ratingSubmitted && (
+            <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200 text-center text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>Thank you! Review credited to technician's reliability record.</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

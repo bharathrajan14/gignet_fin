@@ -1,0 +1,19 @@
+{
+  "name": "gignet-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "backend",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:customer": "npm --prefix apps/customer-app run dev",
+    "dev:worker": "npm --prefix apps/worker-app run dev",
+    "dev:admin": "npm --prefix apps/admin-app run dev",
+    "seed": "npm --prefix backend run seed",
+    "forecast": "cd forecast-service && python -m uvicorn app.main:app --port 8000 --reload"
+  }
+}
