@@ -8,11 +8,15 @@ export async function connectDB() {
 
   if (uri) {
     try {
-      await mongoose.connect(uri);
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
       console.log(`[Database] Connected to MongoDB Atlas / External: ${mongoose.connection.host}`);
       return;
     } catch (err) {
-      console.warn(`[Database] Failed to connect to MONGODB_URI: ${err.message}. Falling back to Memory Server...`);
+      console.error(`[Database] Failed to connect to MONGODB_URI: ${err.message}`);
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(`MongoDB Atlas Connection Failed: ${err.message}. Check Atlas IP whitelist (allow 0.0.0.0/0) and credentials.`);
+      }
+      console.warn(`[Database] Falling back to Memory Server for local development...`);
     }
   }
 

@@ -1,13 +1,10 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy root and shared contracts
 COPY package*.json ./
-COPY shared ./shared
-COPY backend ./backend
-
-WORKDIR /app/backend
 RUN npm install --omit=dev
+
+COPY . .
 
 ENV PORT=8080
 ENV NODE_ENV=production

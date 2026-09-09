@@ -21,7 +21,19 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Health check
+// Root & Health check
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    service: 'GIGNET Core Backend',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      api: '/api/v1'
+    }
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -49,19 +61,29 @@ app.use((err, req, res, next) => {
 // Socket.IO
 initSocketIO(server);
 
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || '5000', 10);
+const HOST = '0.0.0.0';
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[UnhandledRejection] at:', promise, 'reason:', reason);
+});
 
 async function startServer() {
-  await connectDB();
-  await seedDatabaseIfEmpty();
+  try {
+    await connectDB();
+    await seedDatabaseIfEmpty();
 
-  server.listen(PORT, () => {
-    console.log(`====================================================`);
-    console.log(`🚀 GIGNET Core Backend Running on port ${PORT}`);
-    console.log(`📍 REST API Prefix: /api/v1`);
-    console.log(`⚡ WebSocket / Socket.IO ready on port ${PORT}`);
-    console.log(`====================================================`);
-  });
+    server.listen(PORT, HOST, () => {
+      console.log(`====================================================`);
+      console.log(`🚀 GIGNET Core Backend Running on http://${HOST}:${PORT}`);
+      console.log(`📍 REST API Prefix: /api/v1`);
+      console.log(`⚡ WebSocket / Socket.IO ready on port ${PORT}`);
+      console.log(`====================================================`);
+    });
+  } catch (err) {
+    console.error(`[FatalStartupError] Failed to start backend:`, err);
+    process.exit(1);
+  }
 }
 
 startServer();

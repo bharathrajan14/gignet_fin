@@ -2,7 +2,7 @@ import Invoice from '../models/Invoice.js';
 import Booking from '../models/Booking.js';
 import Worker from '../models/Worker.js';
 import Cooperative from '../models/Cooperative.js';
-import { FINANCIAL_SPLIT } from '@gignet/shared';
+import { FINANCIAL_SPLIT } from '../shared/contracts.js';
 
 /**
  * Generates an itemized invoice for a completed booking.

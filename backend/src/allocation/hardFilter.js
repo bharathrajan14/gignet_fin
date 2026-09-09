@@ -1,5 +1,5 @@
 import WorkerSchedule from '../models/WorkerSchedule.js';
-import { ALLOCATION_WEIGHTS } from '@gignet/shared';
+import { ALLOCATION_WEIGHTS } from '../shared/contracts.js';
 import { calculateDistanceKm, estimateTravelMinutes } from '../utils/geoUtils.js';
 
 /**

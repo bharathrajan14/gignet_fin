@@ -1,7 +1,7 @@
 import Booking from '../models/Booking.js';
 import Service from '../models/Service.js';
 import BookingEvent from '../models/BookingEvent.js';
-import { SEARCH_RADII } from '@gignet/shared';
+import { SEARCH_RADII } from '../shared/contracts.js';
 import { findWorkersInRadius } from './geoSearch.js';
 import { evaluateHardFilter } from './hardFilter.js';
 import { rankCandidate } from './rankingEngine.js';

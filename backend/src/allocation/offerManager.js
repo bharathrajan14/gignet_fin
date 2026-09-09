@@ -3,7 +3,7 @@ import Booking from '../models/Booking.js';
 import Worker from '../models/Worker.js';
 import WorkerSchedule from '../models/WorkerSchedule.js';
 import BookingEvent from '../models/BookingEvent.js';
-import { OFFER_COUNTDOWN_SECONDS } from '@gignet/shared';
+import { OFFER_COUNTDOWN_SECONDS } from '../shared/contracts.js';
 import { getSocketIO } from '../services/socketService.js';
 import { estimateTravelMinutes } from '../utils/geoUtils.js';
 

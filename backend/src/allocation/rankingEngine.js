@@ -1,4 +1,4 @@
-import { ALLOCATION_WEIGHTS } from '@gignet/shared';
+import { ALLOCATION_WEIGHTS } from '../shared/contracts.js';
 
 /**
  * Stage 3: Multi-Criteria Ranking Engine

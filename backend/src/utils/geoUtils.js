@@ -1,5 +1,5 @@
 import * as h3 from 'h3-js';
-import { H3_RESOLUTIONS } from '@gignet/shared';
+import { H3_RESOLUTIONS } from '../shared/contracts.js';
 
 /**
  * Calculates Haversine distance in kilometers between two [lon, lat] points

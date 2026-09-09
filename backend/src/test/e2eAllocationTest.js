@@ -9,7 +9,7 @@ import AllocationRun from '../models/AllocationRun.js';
 import AllocationCandidate from '../models/AllocationCandidate.js';
 import { runAllocation } from '../allocation/allocationEngine.js';
 import { generateInvoiceForBooking } from '../services/invoiceService.js';
-import { FINANCIAL_SPLIT } from '@gignet/shared';
+import { FINANCIAL_SPLIT } from '../shared/contracts.js';
 
 async function runEndToEndTest() {
   console.log(`\n======================================================`);
