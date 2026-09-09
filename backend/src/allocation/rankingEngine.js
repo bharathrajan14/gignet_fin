@@ -55,8 +55,8 @@ export function rankCandidate({
     finalScore = Math.round(finalScore * 10000) / 10000;
 
     explainabilitySummary = 
-      `${workerName} [${worker.badgeNumber}]: Final Score ${finalScore} ` +
-      `(Utilization ${utilizationScore} [worked ${actualWorkedHours.toFixed(1)}h/${availableHours}h] × 60% = ${(w.UTILIZATION * utilizationScore).toFixed(3)}, ` +
+      `[SCHEDULED DISPATCH: Workload Balance & Anti-Burnout Prioritized] ${workerName} [${worker.badgeNumber}]: Final Score ${finalScore} ` +
+      `(Workload Balance ${utilizationScore} [worked ${actualWorkedHours.toFixed(1)}h/${availableHours}h] × 60% = ${(w.UTILIZATION * utilizationScore).toFixed(3)}, ` +
       `Rating ${ratingScore} [${rawRating.toFixed(1)}★] × 20% = ${(w.RATING * ratingScore).toFixed(3)}, ` +
       `Distance ${distanceScore} [${distanceKm.toFixed(1)}km/${radius}km] × 20% = ${(w.DISTANCE * distanceScore).toFixed(3)}` +
       `${isSameCooperative ? ` + 0.08 Local Coop Bonus` : ''}). ` +
@@ -73,7 +73,7 @@ export function rankCandidate({
     finalScore = Math.round(finalScore * 10000) / 10000;
 
     explainabilitySummary = 
-      `${workerName} [${worker.badgeNumber}]: Final Score ${finalScore} ` +
+      `[EMERGENCY DISPATCH: Nearest Proximity Worker Prioritized] ${workerName} [${worker.badgeNumber}]: Final Score ${finalScore} ` +
       `(Distance ${distanceScore} [${distanceKm.toFixed(1)}km] × 70% = ${(w.DISTANCE * distanceScore).toFixed(3)}, ` +
       `Rating ${ratingScore} [${rawRating.toFixed(1)}★] × 20% = ${(w.RATING * ratingScore).toFixed(3)}, ` +
       `Utilization ${utilizationScore} × 10% = ${(w.UTILIZATION * utilizationScore).toFixed(3)}). ` +
@@ -83,6 +83,7 @@ export function rankCandidate({
   return {
     workerId: worker._id,
     scores: {
+      rankingCriteria: bookingType === 'EMERGENCY' ? 'NEAREST_WORKER' : 'FAIRNESS_WORKLOAD',
       distanceKm,
       distanceScore,
       ratingScore,

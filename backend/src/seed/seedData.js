@@ -608,35 +608,324 @@ export async function seedDatabase() {
     isOnline: true
   });
 
-  // 6. Seed 7-Day Forecast & Gap Data
-  const forecastItems = [
-    { offset: 1, demand: 16.2, gap: 12.2 },
-    { offset: 2, demand: 15.0, gap: 11.0 },
-    { offset: 3, demand: 17.4, gap: 13.4 },
-    { offset: 4, demand: 14.8, gap: 10.8 },
-    { offset: 5, demand: 18.0, gap: 14.0 },
-    { offset: 6, demand: 21.5, gap: 17.5 },
-    { offset: 7, demand: 19.6, gap: 15.6 }
-  ];
+  // WORKER 10: Venkatesh M. - Senior Plumbing Contractor (Jayanagar Guild)
+  const venkatUser = await User.create({
+    email: 'venkatesh.worker@gignet.in',
+    phoneNumber: '+919876500010',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: venkatUser._id, fullName: 'Venkatesh M.' });
+  const workerVenkat = await Worker.create({
+    userId: venkatUser._id,
+    cooperativeId: coopJayanagar._id,
+    badgeNumber: 'WRK-BLR-110',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['PLUMBING_BASIC', 'PIPE_FITTING'],
+    rating: { average: 4.86, count: 42 },
+    fairnessMetrics: { completedJobsCount: 18, weeklyEarnings: 3200, weeklyAssignedHours: 11, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerVenkat._id,
+    location: { type: 'Point', coordinates: [77.5920, 12.9290] },
+    h3Res7: toH3(12.9290, 77.5920, 7),
+    isOnline: true
+  });
 
-  const forecastDocs = forecastItems.map(item => ({
+  // WORKER 11: Arun Kumar - Domestic Electrician (HSR Layout Coop)
+  const arunUser = await User.create({
+    email: 'arun.worker@gignet.in',
+    phoneNumber: '+919876500011',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: arunUser._id, fullName: 'Arun Kumar' });
+  const workerArun = await Worker.create({
+    userId: arunUser._id,
+    cooperativeId: coopHsrLayout._id,
+    badgeNumber: 'WRK-BLR-111',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['ELECTRICAL_SAFETY'],
+    rating: { average: 4.91, count: 47 },
+    fairnessMetrics: { completedJobsCount: 20, weeklyEarnings: 3400, weeklyAssignedHours: 12, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerArun._id,
+    location: { type: 'Point', coordinates: [77.6390, 12.9140] },
+    h3Res7: toH3(12.9140, 77.6390, 7),
+    isOnline: true
+  });
+
+  // WORKER 12: Sneha Reddy - Certified Commercial Electrician (Indiranagar Coop)
+  const snehaUser = await User.create({
+    email: 'sneha.worker@gignet.in',
+    phoneNumber: '+919876500012',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: snehaUser._id, fullName: 'Sneha Reddy' });
+  const workerSneha = await Worker.create({
+    userId: snehaUser._id,
+    cooperativeId: coopIndiranagar._id,
+    badgeNumber: 'WRK-BLR-112',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['ELECTRICAL_SAFETY'],
+    rating: { average: 4.97, count: 64 },
+    fairnessMetrics: { completedJobsCount: 25, weeklyEarnings: 4100, weeklyAssignedHours: 15, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerSneha._id,
+    location: { type: 'Point', coordinates: [77.6410, 12.9780] },
+    h3Res7: toH3(12.9780, 77.6410, 7),
+    isOnline: true
+  });
+
+  // WORKER 13: Imran Khan - Geyser & Home Appliance Technician (Bengaluru South)
+  const imranUser = await User.create({
+    email: 'imran.worker@gignet.in',
+    phoneNumber: '+919876500013',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: imranUser._id, fullName: 'Imran Khan' });
+  const workerImran = await Worker.create({
+    userId: imranUser._id,
     cooperativeId: coopBengaluruSouth._id,
-    serviceCategory: 'PLUMBING',
-    targetDate: new Date(Date.now() + item.offset * 86400000),
-    predictedDemandCount: item.demand,
-    confidenceLower: item.demand - 2.0,
-    confidenceUpper: item.demand + 2.5,
-    currentAvailableWorkforce: 4,
-    workforceGap: item.gap,
-    actionRecommendation: 'REQUEST_WORKERS_INWARD',
-    modelMetadata: { algorithm: 'Ridge Regression with Seasonality', compute: 'CPU-only' }
-  }));
-  await Forecast.insertMany(forecastDocs);
+    badgeNumber: 'WRK-BLR-113',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['APPLIANCE_REPAIR'],
+    rating: { average: 4.89, count: 37 },
+    fairnessMetrics: { completedJobsCount: 16, weeklyEarnings: 2900, weeklyAssignedHours: 10, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerImran._id,
+    location: { type: 'Point', coordinates: [77.6250, 12.9320] },
+    h3Res7: toH3(12.9320, 77.6250, 7),
+    isOnline: true
+  });
+
+  // WORKER 14: Pooja Hegde - Master HVAC & Split AC Specialist (HSR Layout)
+  const poojaUser = await User.create({
+    email: 'pooja.worker@gignet.in',
+    phoneNumber: '+919876500014',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: poojaUser._id, fullName: 'Pooja Hegde' });
+  const workerPooja = await Worker.create({
+    userId: poojaUser._id,
+    cooperativeId: coopHsrLayout._id,
+    badgeNumber: 'WRK-BLR-114',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['HVAC_REPAIR', 'APPLIANCE_REPAIR'],
+    rating: { average: 4.96, count: 52 },
+    fairnessMetrics: { completedJobsCount: 22, weeklyEarnings: 4500, weeklyAssignedHours: 13, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerPooja._id,
+    location: { type: 'Point', coordinates: [77.6330, 12.9180] },
+    h3Res7: toH3(12.9180, 77.6330, 7),
+    isOnline: true
+  });
+
+  // WORKER 15: Harish Shetty - Artisan Woodworker & Cabinetmaker (Koramangala)
+  const harishUser = await User.create({
+    email: 'harish.worker@gignet.in',
+    phoneNumber: '+919876500015',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: harishUser._id, fullName: 'Harish Shetty' });
+  const workerHarish = await Worker.create({
+    userId: harishUser._id,
+    cooperativeId: coopBengaluruSouth._id,
+    badgeNumber: 'WRK-BLR-115',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['CARPENTRY_SKILL'],
+    rating: { average: 4.88, count: 35 },
+    fairnessMetrics: { completedJobsCount: 14, weeklyEarnings: 2700, weeklyAssignedHours: 9, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerHarish._id,
+    location: { type: 'Point', coordinates: [77.6290, 12.9370] },
+    h3Res7: toH3(12.9370, 77.6290, 7),
+    isOnline: true
+  });
+
+  // WORKER 16: Dilip Das - Modular Furniture & Locksmith (Indiranagar)
+  const dilipUser = await User.create({
+    email: 'dilip.worker@gignet.in',
+    phoneNumber: '+919876500016',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: dilipUser._id, fullName: 'Dilip Das' });
+  const workerDilip = await Worker.create({
+    userId: dilipUser._id,
+    cooperativeId: coopIndiranagar._id,
+    badgeNumber: 'WRK-BLR-116',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['CARPENTRY_SKILL'],
+    rating: { average: 4.82, count: 28 },
+    fairnessMetrics: { completedJobsCount: 11, weeklyEarnings: 2200, weeklyAssignedHours: 7, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerDilip._id,
+    location: { type: 'Point', coordinates: [77.6430, 12.9730] },
+    h3Res7: toH3(12.9730, 77.6430, 7),
+    isOnline: true
+  });
+
+  // WORKER 17: Meena Bai - Deep Cleaning & Kitchen Degreaser (Koramangala)
+  const meenaUser = await User.create({
+    email: 'meena.worker@gignet.in',
+    phoneNumber: '+919876500017',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: meenaUser._id, fullName: 'Meena Bai' });
+  const workerMeena = await Worker.create({
+    userId: meenaUser._id,
+    cooperativeId: coopBengaluruSouth._id,
+    badgeNumber: 'WRK-BLR-117',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['CLEANING_HYGIENE'],
+    rating: { average: 4.93, count: 50 },
+    fairnessMetrics: { completedJobsCount: 24, weeklyEarnings: 4600, weeklyAssignedHours: 16, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerMeena._id,
+    location: { type: 'Point', coordinates: [77.6260, 12.9360] },
+    h3Res7: toH3(12.9360, 77.6260, 7),
+    isOnline: true
+  });
+
+  // WORKER 18: Sumathi R. - Hospital Grade Sanitization Specialist (Jayanagar)
+  const sumathiUser = await User.create({
+    email: 'sumathi.worker@gignet.in',
+    phoneNumber: '+919876500018',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: sumathiUser._id, fullName: 'Sumathi R.' });
+  const workerSumathi = await Worker.create({
+    userId: sumathiUser._id,
+    cooperativeId: coopJayanagar._id,
+    badgeNumber: 'WRK-BLR-118',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['CLEANING_HYGIENE'],
+    rating: { average: 4.90, count: 41 },
+    fairnessMetrics: { completedJobsCount: 19, weeklyEarnings: 3800, weeklyAssignedHours: 14, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerSumathi._id,
+    location: { type: 'Point', coordinates: [77.5870, 12.9240] },
+    h3Res7: toH3(12.9240, 77.5870, 7),
+    isOnline: true
+  });
+
+  // WORKER 19: Basavaraj H. - Waterproofing & Seepage Specialist (Bengaluru South)
+  const basavUser = await User.create({
+    email: 'basavaraj.worker@gignet.in',
+    phoneNumber: '+919876500019',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: basavUser._id, fullName: 'Basavaraj H.' });
+  const workerBasav = await Worker.create({
+    userId: basavUser._id,
+    cooperativeId: coopBengaluruSouth._id,
+    badgeNumber: 'WRK-BLR-119',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['PIPE_FITTING', 'PLUMBING_BASIC'],
+    rating: { average: 4.87, count: 33 },
+    fairnessMetrics: { completedJobsCount: 15, weeklyEarnings: 3100, weeklyAssignedHours: 11, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerBasav._id,
+    location: { type: 'Point', coordinates: [77.6230, 12.9330] },
+    h3Res7: toH3(12.9330, 77.6230, 7),
+    isOnline: true
+  });
+
+  // WORKER 20: Prakash Chand - Master Painter & Crack Sealer (Jayanagar)
+  const prakashUser = await User.create({
+    email: 'prakash.worker@gignet.in',
+    phoneNumber: '+919876500020',
+    role: 'WORKER'
+  });
+  await Profile.create({ userId: prakashUser._id, fullName: 'Prakash Chand' });
+  const workerPrakash = await Worker.create({
+    userId: prakashUser._id,
+    cooperativeId: coopJayanagar._id,
+    badgeNumber: 'WRK-BLR-120',
+    kycStatus: 'VERIFIED',
+    isOnline: true,
+    isAvailable: true,
+    skills: ['CARPENTRY_SKILL'],
+    rating: { average: 4.85, count: 29 },
+    fairnessMetrics: { completedJobsCount: 12, weeklyEarnings: 2500, weeklyAssignedHours: 8, workloadStatus: 'BALANCED' }
+  });
+  await WorkerLocation.create({
+    workerId: workerPrakash._id,
+    location: { type: 'Point', coordinates: [77.5840, 12.9260] },
+    h3Res7: toH3(12.9260, 77.5840, 7),
+    isOnline: true
+  });
+
+  // 6. Seed 7-Day Forecast & Gap Data across ALL Categories
+  const categoriesList = ['PLUMBING', 'ELECTRICAL', 'APPLIANCE', 'CARPENTRY', 'CLEANING', 'MASONRY'];
+  const baselineFactors = {
+    PLUMBING: { baseDemand: 16, avail: 5, mult: 1.0 },
+    ELECTRICAL: { baseDemand: 14, avail: 4, mult: 0.9 },
+    APPLIANCE: { baseDemand: 15, avail: 4, mult: 1.0 },
+    CARPENTRY: { baseDemand: 11, avail: 3, mult: 0.8 },
+    CLEANING: { baseDemand: 18, avail: 4, mult: 1.2 },
+    MASONRY: { baseDemand: 9, avail: 2, mult: 0.7 }
+  };
+
+  const allForecastDocs = [];
+  for (const cat of categoriesList) {
+    const factor = baselineFactors[cat] || { baseDemand: 12, avail: 3, mult: 1.0 };
+    for (let offset = 1; offset <= 7; offset++) {
+      const isWeekend = (offset % 7 === 5 || offset % 7 === 6);
+      const weekendMult = isWeekend ? 1.35 : 1.0;
+      const demand = Math.round((factor.baseDemand * weekendMult + (offset * 0.4)) * 10) / 10;
+      const gap = Math.max(0, Math.round((demand - factor.avail) * 10) / 10);
+      const action = gap > 2 ? 'REQUEST_WORKERS_INWARD' : (gap > 0 ? 'EXPEDITE_SHIFTS' : 'BALANCED');
+
+      allForecastDocs.push({
+        cooperativeId: coopBengaluruSouth._id,
+        serviceCategory: cat,
+        targetDate: new Date(Date.now() + offset * 86400000),
+        predictedDemandCount: demand,
+        confidenceLower: Math.max(1, Math.round((demand - 2.2) * 10) / 10),
+        confidenceUpper: Math.round((demand + 2.5) * 10) / 10,
+        currentAvailableWorkforce: factor.avail,
+        workforceGap: gap,
+        actionRecommendation: action,
+        modelMetadata: { algorithm: 'Ridge Regression with Temporal Seasonality', compute: 'CPU-only' }
+      });
+    }
+  }
+
+  await Forecast.insertMany(allForecastDocs);
 
   console.log(`[Seed] Seeded successfully!`);
   console.log(`- 6 Cooperatives across Bengaluru (Koramangala, Indiranagar, Whitefield, Jayanagar, Malleshwaram, HSR)`);
   console.log(`- 10 High-Demand Services across Plumbing, Electrical, HVAC, Appliance, Carpentry, Cleaning`);
-  console.log(`- 9 Active Cooperative Workers with full GPS telemetry & verified skills`);
+  console.log(`- 20 Active Cooperative Workers with full GPS telemetry & verified skills`);
+  console.log(`- 7-Day Multi-Category Forecasts initialized for all 6 trade categories`);
   console.log(`- Demo Personas initialized for instant switching`);
 }
 

@@ -131,7 +131,26 @@ export async function handleOfferResponse({ offerId, workerId, isAccepted, rejec
   const offer = await WorkerOffer.findById(offerId);
   if (!offer) throw new Error('Offer not found');
   if (offer.offerStatus !== 'PENDING') throw new Error(`Offer is already ${offer.offerStatus}`);
-  if (String(offer.workerId) !== String(workerId)) throw new Error('Unauthorized worker for this offer');
+
+  // Guild delegation check: If switched worker persona accepts, verify eligibility
+  if (String(offer.workerId) !== String(workerId)) {
+    const respondingWorker = await Worker.findById(workerId);
+    const targetWorker = await Worker.findById(offer.workerId);
+    const booking = await Booking.findById(offer.bookingId).populate('serviceId');
+
+    const isSameCoop = respondingWorker && targetWorker && 
+      String(respondingWorker.cooperativeId) === String(targetWorker.cooperativeId);
+    
+    const hasRequiredSkill = !booking?.serviceId?.requiredSkills?.length || 
+      booking.serviceId.requiredSkills.some(reqSkill => respondingWorker?.skills?.includes(reqSkill));
+
+    if (isSameCoop || hasRequiredSkill) {
+      console.log(`[OfferManager] Cooperative guild delegation: Worker ${respondingWorker?.badgeNumber} accepted offer originally issued to ${targetWorker?.badgeNumber}. Reassigning.`);
+      offer.workerId = workerId;
+    } else {
+      throw new Error('Unauthorized worker for this offer: Technician trade skills do not match service requirements.');
+    }
+  }
 
   // Cancel in-memory timer
   const timer = activeOfferTimers.get(String(offerId));

@@ -33,6 +33,14 @@ export function initSocketIO(httpServer) {
       }
     });
 
+    // Leave worker-specific room
+    socket.on('leave:worker', (workerId) => {
+      if (workerId) {
+        socket.leave(`worker:${workerId}`);
+        console.log(`[Socket.IO] Socket ${socket.id} left worker:${workerId}`);
+      }
+    });
+
     // Join cooperative-specific room
     socket.on('join:coop', (coopId) => {
       if (coopId) {

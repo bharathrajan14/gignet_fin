@@ -78,11 +78,22 @@ export function AllocationAuditDrawer({ booking, onClose }) {
                     {run.searchStage} ({run.radiusKm} km radius)
                   </h3>
                 </div>
-                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                  run.status === 'CANDIDATE_OFFERED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400'
-                }`}>
-                  {run.status}
-                </span>
+                <div className="flex items-center gap-2">
+                  {booking.bookingType === 'EMERGENCY' ? (
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-rose-400 fill-current" /> Nearest Responder (70% Distance)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-emerald-400" /> Workload Balance (60% Fairness)
+                    </span>
+                  )}
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                    run.status === 'CANDIDATE_OFFERED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                  }`}>
+                    {run.status}
+                  </span>
+                </div>
               </div>
 
               {/* Candidates Table */}

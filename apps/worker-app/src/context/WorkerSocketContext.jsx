@@ -37,9 +37,16 @@ export function WorkerSocketProvider({ children }) {
 
   useEffect(() => {
     if (socket && workerProfile?._id) {
-      socket.emit('join:worker', workerProfile._id);
+      const currentWorkerId = workerProfile._id;
+      socket.emit('join:worker', currentWorkerId);
+      console.log(`[WorkerSocket] Joined room: worker:${currentWorkerId}`);
+
+      return () => {
+        socket.emit('leave:worker', currentWorkerId);
+        console.log(`[WorkerSocket] Left room: worker:${currentWorkerId}`);
+      };
     }
-  }, [socket, workerProfile]);
+  }, [socket, workerProfile?._id]);
 
   return (
     <WorkerSocketContext.Provider value={socket}>

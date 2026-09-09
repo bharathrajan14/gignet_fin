@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Profile from '../models/Profile.js';
@@ -110,6 +111,39 @@ export async function verifyDemoOtp(req, res) {
  * - 'admin': Cooperative Admin (Koramangala Society)
  * - 'federation': Federation Admin (Bangalore Central)
  */
+export async function getWorkerPersonas(req, res) {
+  try {
+    const workers = await Worker.find()
+      .populate('userId')
+      .populate('cooperativeId');
+
+    const personas = workers.map((w) => {
+      let trade = 'General Utility';
+      if (w.skills?.some((s) => s.includes('PLUMB'))) trade = 'Plumbing';
+      else if (w.skills?.some((s) => s.includes('ELEC'))) trade = 'Electrical';
+      else if (w.skills?.some((s) => s.includes('HVAC') || s.includes('APPLIANCE'))) trade = 'Appliance & HVAC';
+      else if (w.skills?.some((s) => s.includes('CARPENT'))) trade = 'Carpentry';
+      else if (w.skills?.some((s) => s.includes('CLEAN'))) trade = 'Cleaning';
+      else if (w.skills?.some((s) => s.includes('PIPE') || s.includes('MASON'))) trade = 'Masonry & Waterproofing';
+
+      return {
+        id: w._id,
+        badgeNumber: w.badgeNumber,
+        fullName: w.userId?.email?.split('@')[0]?.replace('.', ' ')?.toUpperCase() || 'TECHNICIAN',
+        trade,
+        skills: w.skills,
+        cooperativeName: w.cooperativeId?.name || 'Bengaluru Cooperative',
+        workloadStatus: w.fairnessMetrics?.workloadStatus || 'BALANCED',
+        rating: w.rating?.average || 4.8
+      };
+    });
+
+    return res.status(200).json({ success: true, data: personas });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
 export async function switchDemoPersona(req, res) {
   const { persona } = req.body;
 
@@ -118,20 +152,31 @@ export async function switchDemoPersona(req, res) {
 
     if (persona === 'customer') {
       targetUser = await User.findOne({ role: 'CUSTOMER' });
-    } else if (persona.startsWith('worker')) {
+    } else if (persona.startsWith('WRK-') || persona.startsWith('worker-') || mongoose.Types.ObjectId.isValid(persona)) {
+      // Direct badge, slug or worker ID lookup
+      let badge = persona;
       const badgeMap = {
         'worker-suresh': 'WRK-BLR-101',
         'worker-ramesh': 'WRK-BLR-102',
         'worker-ravi': 'WRK-BLR-103',
         'worker-priya': 'WRK-BLR-104',
         'worker-ananya': 'WRK-BLR-105',
-        'worker-manoj': 'WRK-BLR-106'
+        'worker-manoj': 'WRK-BLR-106',
+        'worker-deepa': 'WRK-BLR-107',
+        'worker-karthik': 'WRK-BLR-108',
+        'worker-rajeshwari': 'WRK-BLR-109'
       };
-      const badge = badgeMap[persona];
 
-      if (badge) {
-        const worker = await Worker.findOne({ badgeNumber: badge });
-        if (worker) targetUser = await User.findById(worker.userId);
+      if (badgeMap[persona]) {
+        badge = badgeMap[persona];
+      }
+
+      let worker = await Worker.findOne({ badgeNumber: badge });
+      if (!worker && mongoose.Types.ObjectId.isValid(persona)) {
+        worker = await Worker.findById(persona).catch(() => null);
+      }
+      if (worker) {
+        targetUser = await User.findById(worker.userId);
       }
       if (!targetUser) {
         targetUser = await User.findOne({ role: 'WORKER' });
