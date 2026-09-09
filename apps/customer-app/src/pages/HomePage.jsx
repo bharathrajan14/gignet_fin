@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
-import { Zap, Calendar, Wrench, Sparkles, ShieldCheck, MapPin, ArrowRight, Clock, AlertTriangle } from 'lucide-react';
+import { api, getBaseUrl, setCustomApiUrl } from '../services/api';
+import { Zap, Calendar, Wrench, Sparkles, ShieldCheck, MapPin, ArrowRight, Clock, AlertTriangle, Link2 } from 'lucide-react';
 import { LeafletMap } from '../components/LeafletMap';
 
 export function HomePage({ onBookingCreated }) {
@@ -10,6 +9,7 @@ export function HomePage({ onBookingCreated }) {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedService, setSelectedService] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [customUrlInput, setCustomUrlInput] = useState('');
 
   // Default Bengaluru location
   const [customerCoords, setCustomerCoords] = useState([77.6245, 12.9352]); // [lon, lat]
@@ -21,6 +21,7 @@ export function HomePage({ onBookingCreated }) {
 
   const fetchServices = async () => {
     try {
+      setLoading(true);
       const res = await api.get('/customer/services');
       if (res.data.success) {
         setServices(res.data.data);
@@ -30,6 +31,16 @@ export function HomePage({ onBookingCreated }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConnectCustomBackend = async () => {
+    if (!customUrlInput.trim()) return;
+    setCustomApiUrl(customUrlInput.trim());
+    await fetchServices();
+    // Also try switching persona so user is logged in
+    try {
+      await api.post('/auth/demo-switch', { persona: 'customer' });
+    } catch (_) {}
   };
 
   const filteredServices = services.filter((s) => {
@@ -165,6 +176,34 @@ export function HomePage({ onBookingCreated }) {
         {loading ? (
           <div className="py-12 text-center text-slate-400 text-xs font-semibold">
             Loading society catalog...
+          </div>
+        ) : filteredServices.length === 0 ? (
+          <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 text-center my-2 space-y-3 shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mx-auto text-emerald-700">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800">Connect to Live Backend</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                Paste your live Render backend URL below to connect and load the cooperative services catalog:
+              </p>
+            </div>
+            <div className="flex gap-2 max-w-sm mx-auto">
+              <input
+                type="text"
+                placeholder="https://gignet-backend.onrender.com"
+                value={customUrlInput}
+                onChange={(e) => setCustomUrlInput(e.target.value)}
+                className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+              />
+              <button
+                onClick={handleConnectCustomBackend}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition"
+              >
+                Connect
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 font-mono truncate">Current Target: {getBaseUrl()}</p>
           </div>
         ) : (
           filteredServices.map((svc) => {
