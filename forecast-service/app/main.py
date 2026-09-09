@@ -20,6 +20,19 @@ app.add_middleware(
 
 model_engine = DemandForecastModel()
 
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "GIGNET Demand Forecasting & Workforce Planning Microservice",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "docs": "/docs",
+            "predict_demand": "/predict-demand"
+        }
+    }
+
 @app.get("/health")
 def health_check():
     return {
