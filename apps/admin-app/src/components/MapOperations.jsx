@@ -59,10 +59,10 @@ export function MapOperations({ workers = [], bookings = [], hexClusters = [], o
               }}
             >
               <Popup>
-                <div className="text-xs p-1">
-                  <p className="font-bold text-slate-900">H3 Cell: {cluster.cellId}</p>
-                  <p className="text-slate-600">Active Workers: {cluster.workerCount}</p>
-                  <p className="text-slate-600">Pending Demand: {cluster.demandCount}</p>
+                <div className="text-xs p-1 space-y-0.5">
+                  <p className="font-extrabold text-sky-400">H3 Cell: {cluster.cellId}</p>
+                  <p className="text-slate-300">Active Workers: <span className="text-emerald-400 font-bold">{cluster.workerCount}</span></p>
+                  <p className="text-slate-300">Pending Demand: <span className="text-rose-400 font-bold">{cluster.demandCount}</span></p>
                 </div>
               </Popup>
             </Polygon>
@@ -92,16 +92,16 @@ export function MapOperations({ workers = [], bookings = [], hexClusters = [], o
               icon={createWorkerIcon(color, badge)}
             >
               <Popup>
-                <div className="p-1 space-y-1 text-xs">
-                  <div className="flex items-center gap-1.5 font-extrabold text-slate-900">
+                <div className="p-1.5 space-y-1 text-xs">
+                  <div className="flex items-center gap-1.5 font-extrabold text-white">
                     <span>{item.workerId?.badgeNumber}</span>
-                    <span className="text-[10px] uppercase px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: color }}>
+                    <span className="text-[10px] uppercase px-1.5 py-0.5 rounded text-white font-bold" style={{ backgroundColor: color }}>
                       {status}
                     </span>
                   </div>
-                  <p className="text-slate-600">Rating: ★ {item.workerId?.rating?.average || 4.9}</p>
-                  <p className="text-slate-600">Weekly Jobs: {item.workerId?.fairnessMetrics?.completedJobsCount || 0}</p>
-                  <p className="text-slate-500 text-[10px]">Lat: {coords[1].toFixed(4)}, Lon: {coords[0].toFixed(4)}</p>
+                  <p className="text-slate-300">Rating: <span className="text-amber-400 font-bold">★ {item.workerId?.rating?.average || 4.9}</span></p>
+                  <p className="text-slate-300">Weekly Jobs: <span className="text-white font-semibold">{item.workerId?.fairnessMetrics?.completedJobsCount || 0}</span></p>
+                  <p className="text-slate-400 text-[10px] font-mono">Lat: {coords[1].toFixed(4)}, Lon: {coords[0].toFixed(4)}</p>
                 </div>
               </Popup>
             </Marker>
@@ -126,15 +126,15 @@ export function MapOperations({ workers = [], bookings = [], hexClusters = [], o
               }}
             >
               <Popup>
-                <div className="p-1 space-y-1 text-xs">
-                  <p className="font-extrabold text-rose-600">{b.bookingNumber} [EMERGENCY]</p>
-                  <p className="font-bold text-slate-900">{b.serviceId?.name}</p>
-                  <p className="text-slate-500">{b.addressText}</p>
+                <div className="p-1.5 space-y-1.5 text-xs">
+                  <p className="font-extrabold text-rose-400">{b.bookingNumber} [EMERGENCY]</p>
+                  <p className="font-bold text-white">{b.serviceId?.name}</p>
+                  <p className="text-slate-400 text-[11px] truncate max-w-[200px]">{b.addressText}</p>
                   <button
                     onClick={() => onSelectBooking(b)}
-                    className="w-full mt-1 py-1 bg-slate-900 text-white font-bold rounded text-[10px]"
+                    className="w-full mt-1 py-1.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold rounded-lg text-[11px] shadow transition"
                   >
-                    View Explainable Allocation Trail →
+                    View Explainable Trail →
                   </button>
                 </div>
               </Popup>

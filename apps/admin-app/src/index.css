@@ -5,10 +5,38 @@
 body {
   margin: 0;
   padding: 0;
+  background-color: #020617;
+  color: #f8fafc;
 }
 
+/* Isolate leaflet stacking context so any drawer, modal or floating panel with z-index >= 10 sits in front */
 .leaflet-container {
   width: 100%;
   height: 100%;
   border-radius: 1rem;
+  isolation: isolate;
+  z-index: 1 !important;
+}
+
+/* Leaflet Dark Popups */
+.leaflet-popup-content-wrapper {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+}
+
+.leaflet-popup-tip {
+  background: #0f172a !important;
+  border: 1px solid #334155 !important;
+}
+
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 6px !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
 }

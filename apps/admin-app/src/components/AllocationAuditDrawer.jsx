@@ -29,7 +29,15 @@ export function AllocationAuditDrawer({ booking, onClose }) {
   if (!booking) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full max-w-2xl bg-slate-900 border-l border-slate-800 shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-250 text-white">
+    <div className="fixed inset-0 z-[9999] flex justify-end">
+      {/* Backdrop overlay */}
+      <div 
+        className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Drawer Container */}
+      <div className="relative w-full max-w-2xl bg-slate-900 border-l border-slate-800 shadow-2xl z-10 flex flex-col animate-in slide-in-from-right duration-250 text-white">
       {/* Drawer Header */}
       <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
         <div>
@@ -175,5 +183,6 @@ export function AllocationAuditDrawer({ booking, onClose }) {
         )}
       </div>
     </div>
+  </div>
   );
 }

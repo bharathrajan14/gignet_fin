@@ -135,10 +135,10 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
 
   if (!booking) {
     return (
-      <div className="p-8 text-center text-slate-400 space-y-3">
-        <MapPin className="w-12 h-12 mx-auto text-slate-300 stroke-1" />
-        <p className="font-bold text-sm text-slate-600">No active bookings right now</p>
-        <p className="text-xs text-slate-400">Book a service from the home tab to track your technician.</p>
+      <div className="p-8 text-center text-slate-500 space-y-3">
+        <MapPin className="w-12 h-12 mx-auto text-slate-700 stroke-1" />
+        <p className="font-bold text-sm text-slate-300">No active bookings right now</p>
+        <p className="text-xs text-slate-500">Book a service from the home tab to track your technician.</p>
       </div>
     );
   }
@@ -148,43 +148,43 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
     : [12.9352, 77.6245];
 
   const statusBadgeColor = {
-    DRAFT: 'bg-slate-100 text-slate-700',
-    SEARCHING: 'bg-amber-100 text-amber-800 animate-pulse',
-    OFFERED: 'bg-blue-100 text-blue-800 animate-pulse',
-    CONFIRMED: 'bg-emerald-100 text-emerald-800',
-    ON_THE_WAY: 'bg-sky-100 text-sky-800 animate-pulse',
-    ARRIVED: 'bg-purple-100 text-purple-800',
-    IN_PROGRESS: 'bg-indigo-100 text-indigo-800',
-    COMPLETED: 'bg-emerald-100 text-emerald-800 font-extrabold',
-    PAID: 'bg-teal-100 text-teal-800 font-extrabold'
-  }[booking.status] || 'bg-slate-100 text-slate-700';
+    DRAFT: 'bg-slate-800 text-slate-300 border-slate-700',
+    SEARCHING: 'bg-amber-500/20 text-amber-400 border-amber-500/30 animate-pulse',
+    OFFERED: 'bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse',
+    CONFIRMED: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    ON_THE_WAY: 'bg-sky-500/20 text-sky-400 border-sky-500/30 animate-pulse',
+    ARRIVED: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    IN_PROGRESS: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+    COMPLETED: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-black',
+    PAID: 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-black'
+  }[booking.status] || 'bg-slate-800 text-slate-300 border-slate-700';
 
   return (
-    <div className="p-4 pb-24 space-y-4">
+    <div className="p-4 pb-24 space-y-4 text-slate-100">
       {/* Header Status Bar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+      <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 shadow-lg flex items-center justify-between">
         <div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{booking.bookingNumber}</span>
-          <h2 className="font-black text-slate-900 text-base mt-0.5">{booking.serviceId?.name || 'Service Booking'}</h2>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{booking.bookingNumber}</span>
+          <h2 className="font-black text-white text-base mt-0.5">{booking.serviceId?.name || 'Service Booking'}</h2>
         </div>
-        <span className={`text-xs font-black uppercase px-3 py-1.5 rounded-xl ${statusBadgeColor}`}>
+        <span className={`text-xs font-black uppercase px-3 py-1.5 rounded-xl border ${statusBadgeColor}`}>
           {booking.status.replace(/_/g, ' ')}
         </span>
       </div>
 
       {/* Live State Visualizer */}
       {booking.status === 'SEARCHING' && (
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white text-center space-y-4 shadow-xl">
+        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950/30 border border-slate-800 rounded-3xl p-6 text-white text-center space-y-4 shadow-xl">
           <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
             <div className="absolute inset-0 rounded-full border-4 border-amber-500/30 animate-ping" />
             <div className="absolute inset-2 rounded-full border-4 border-amber-500/60 animate-pulse" />
-            <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/50">
-              <Zap className="w-6 h-6 text-white fill-current" />
+            <div className="w-12 h-12 bg-amber-500 text-slate-950 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/50">
+              <Zap className="w-6 h-6 fill-current" />
             </div>
           </div>
           <div>
-            <h3 className="font-extrabold text-base">Progressive Worker Allocation Active</h3>
-            <p className="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
+            <h3 className="font-black text-base text-white">Progressive Cooperative Dispatch</h3>
+            <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
               Scanning progressive 2dsphere radius (3km → 6km → 12km) and matching verified skills & availability.
             </p>
           </div>
@@ -192,13 +192,13 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
       )}
 
       {booking.status === 'OFFERED' && (
-        <div className="bg-blue-900 rounded-3xl p-6 text-white text-center space-y-3 shadow-xl">
-          <div className="w-14 h-14 bg-blue-600 rounded-full mx-auto flex items-center justify-center animate-bounce shadow-lg shadow-blue-500/50">
-            <Clock className="w-7 h-7 text-white" />
+        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/40 border border-blue-900/50 rounded-3xl p-6 text-white text-center space-y-3 shadow-xl">
+          <div className="w-14 h-14 bg-blue-500 text-slate-950 rounded-full mx-auto flex items-center justify-center animate-bounce shadow-lg shadow-blue-500/50">
+            <Clock className="w-7 h-7" />
           </div>
-          <h3 className="font-extrabold text-base">Candidate Worker Found!</h3>
-          <p className="text-xs text-blue-200">
-            Dispatching 45-second offer countdown to technician. Awaiting acceptance...
+          <h3 className="font-black text-base text-white">Technician Identified!</h3>
+          <p className="text-xs text-blue-300">
+            Dispatching 45-second offer countdown to cooperative technician. Awaiting acceptance...
           </p>
         </div>
       )}
@@ -206,7 +206,7 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
       {/* Map Tracking View (shown when assigned, en route, arrived, in progress) */}
       {['CONFIRMED', 'ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS', 'COMPLETED', 'PAID'].includes(booking.status) && (
         <div className="space-y-3">
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
             <LeafletMap
               customerCoords={customerLatLon}
               workerCoords={workerCoords}
@@ -216,19 +216,19 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
 
             {/* Travel Stats Overlay */}
             {travelStats.remainingKm !== null && booking.status === 'ON_THE_WAY' && (
-              <div className="absolute top-3 left-3 right-3 z-[400] bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+              <div className="absolute top-3 left-3 right-3 z-[400] bg-slate-900/95 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-slate-700/80 flex items-center justify-between text-white">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center">
                     <Navigation className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase text-slate-400">Technician Distance</span>
-                    <p className="text-xs font-black text-slate-800">{travelStats.remainingKm} km away</p>
+                    <p className="text-xs font-black text-white">{travelStats.remainingKm} km away</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] font-bold uppercase text-slate-400">Est. Arrival</span>
-                  <p className="text-xs font-black text-blue-600">~{travelStats.etaMinutes} mins</p>
+                  <p className="text-xs font-black text-sky-400">~{travelStats.etaMinutes} mins</p>
                 </div>
               </div>
             )}
@@ -236,27 +236,27 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
 
           {/* Assigned Worker Details Card */}
           {booking.assignedWorkerId && (
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 shadow-md flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-500 text-slate-950 flex items-center justify-center font-black text-lg shadow-md">
                   {booking.assignedWorkerId.badgeNumber?.slice(-3) || 'W'}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-extrabold text-sm text-slate-900">
+                    <h4 className="font-extrabold text-sm text-white">
                       {booking.assignedWorkerId.userId?.email?.split('@')[0] || 'Suresh Kumar'}
                     </h4>
-                    <span className="text-[10px] font-black bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-black bg-slate-800 text-sky-400 border border-slate-700 px-1.5 py-0.5 rounded">
                       {booking.assignedWorkerId.badgeNumber}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                    <span className="flex items-center gap-1 font-bold text-amber-500">
+                  <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
+                    <span className="flex items-center gap-1 font-bold text-amber-400">
                       ★ {booking.assignedWorkerId.rating?.average || 4.9}
                     </span>
                     <span>•</span>
-                    <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" /> KYC Verified
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" /> Cooperative Certified
                     </span>
                   </div>
                 </div>
@@ -264,7 +264,7 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
 
               <a
                 href="tel:+919876543210"
-                className="w-10 h-10 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition shadow-sm border border-emerald-200"
+                className="w-10 h-10 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 flex items-center justify-center transition shadow-sm border border-emerald-500/30"
               >
                 <Phone className="w-4 h-4" />
               </a>
@@ -275,14 +275,14 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
 
       {/* Invoice & Payment Card (When COMPLETED or PAID) */}
       {invoice && (
-        <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xl space-y-4 animate-in fade-in duration-300">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-slate-950/90 rounded-3xl p-5 border border-slate-800 shadow-2xl space-y-4 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div>
-              <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Official Invoice</span>
-              <h3 className="font-black text-slate-900 text-sm mt-0.5">{invoice.invoiceNumber}</h3>
+              <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Official Cooperative Invoice</span>
+              <h3 className="font-black text-white text-sm mt-0.5">{invoice.invoiceNumber}</h3>
             </div>
-            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
-              invoice.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+            <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${
+              invoice.status === 'PAID' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
             }`}>
               {invoice.status}
             </span>
@@ -290,23 +290,23 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
 
           {/* Itemized Cooperative Breakdown */}
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-slate-400">
               <span>Technician Direct Share (80%)</span>
-              <span className="font-bold text-slate-800">₹{invoice.breakdown.workerPayout}</span>
+              <span className="font-bold text-white">₹{invoice.breakdown.workerPayout}</span>
             </div>
-            <div className="flex justify-between text-emerald-700 bg-emerald-50/70 p-2 rounded-xl border border-emerald-100">
+            <div className="flex justify-between text-emerald-300 bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-900/60">
               <span className="flex items-center gap-1 font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5" /> Cooperative Welfare Reserve (15%)
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Cooperative Welfare Reserve (15%)
               </span>
-              <span className="font-extrabold">₹{invoice.breakdown.cooperativeReserve}</span>
+              <span className="font-extrabold text-emerald-400">₹{invoice.breakdown.cooperativeReserve}</span>
             </div>
-            <div className="flex justify-between text-slate-500">
-              <span>Platform & Network Maintenance (5%)</span>
+            <div className="flex justify-between text-slate-400">
+              <span>Platform Maintenance (5%)</span>
               <span>₹{invoice.breakdown.infrastructureCut}</span>
             </div>
-            <div className="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-100">
-              <span>Total Amount</span>
-              <span>₹{invoice.breakdown.totalAmount}</span>
+            <div className="flex justify-between text-base font-black text-white pt-2 border-t border-slate-800">
+              <span>Total Guaranteed Amount</span>
+              <span className="text-emerald-400 font-black">₹{invoice.breakdown.totalAmount}</span>
             </div>
           </div>
 
@@ -314,7 +314,7 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
             <button
               disabled={paying}
               onClick={handlePayDemo}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 hover:from-emerald-700 hover:to-teal-700 transition"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 hover:from-emerald-400 hover:to-teal-300 transition"
             >
               {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
               <span>Pay ₹{invoice.breakdown.totalAmount} via Demo UPI</span>
@@ -322,8 +322,8 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
           )}
 
           {invoice.status === 'PAID' && !ratingSubmitted && (
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3 mt-4">
-              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider text-center">
+            <div className="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 space-y-3 mt-4">
+              <h4 className="text-xs font-black text-white uppercase tracking-wider text-center">
                 Rate Cooperative Technician
               </h4>
               <div className="flex justify-center gap-2">
@@ -335,7 +335,7 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
                   >
                     <Star
                       className={`w-7 h-7 ${
-                        star <= rating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'
+                        star <= rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'
                       }`}
                     />
                   </button>
@@ -346,11 +346,11 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
                 placeholder="Share feedback on craftmanship and punctuality..."
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
               />
               <button
                 onClick={handleRatingSubmit}
-                className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition"
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition"
               >
                 Submit Review
               </button>
@@ -358,8 +358,8 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
           )}
 
           {ratingSubmitted && (
-            <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200 text-center text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5">
-              <CheckCircle className="w-4 h-4 text-emerald-600" />
+            <div className="bg-emerald-950/40 rounded-2xl p-3 border border-emerald-800 text-center text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5">
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
               <span>Thank you! Review credited to technician's reliability record.</span>
             </div>
           )}

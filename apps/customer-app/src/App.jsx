@@ -37,9 +37,9 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex justify-center">
+    <div className="min-h-screen bg-slate-950 flex justify-center font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Mobile-first Constrained Container */}
-      <div className="w-full max-w-md bg-white min-h-screen shadow-2xl flex flex-col relative border-x border-slate-200">
+      <div className="w-full max-w-md bg-slate-900 min-h-screen shadow-2xl flex flex-col relative border-x border-slate-800 text-slate-100">
         <Navbar />
 
         <main className="flex-1 overflow-y-auto">

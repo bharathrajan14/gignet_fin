@@ -118,11 +118,16 @@ export async function switchDemoPersona(req, res) {
 
     if (persona === 'customer') {
       targetUser = await User.findOne({ role: 'CUSTOMER' });
-    } else if (persona === 'worker-suresh' || persona === 'worker-ramesh' || persona === 'worker-ravi' || persona === 'worker') {
-      const badge = persona === 'worker-suresh' ? 'WRK-BLR-101'
-        : persona === 'worker-ramesh' ? 'WRK-BLR-102'
-        : persona === 'worker-ravi' ? 'WRK-BLR-103'
-        : null;
+    } else if (persona.startsWith('worker')) {
+      const badgeMap = {
+        'worker-suresh': 'WRK-BLR-101',
+        'worker-ramesh': 'WRK-BLR-102',
+        'worker-ravi': 'WRK-BLR-103',
+        'worker-priya': 'WRK-BLR-104',
+        'worker-ananya': 'WRK-BLR-105',
+        'worker-manoj': 'WRK-BLR-106'
+      };
+      const badge = badgeMap[persona];
 
       if (badge) {
         const worker = await Worker.findOne({ badgeNumber: badge });
