@@ -10,11 +10,20 @@ const InvoiceSchema = new mongoose.Schema({
   breakdown: {
     serviceAmount: { type: Number, required: true },
     emergencySurcharge: { type: Number, default: 0 },
-    workerPayout: { type: Number, required: true },       // 80%
-    cooperativeReserve: { type: Number, required: true }, // 15%
-    infrastructureCut: { type: Number, required: true },  // 5%
+    partsTotal: { type: Number, default: 0 },
+    welfareFundFee: { type: Number, default: 15 },
+    workerPayout: { type: Number, required: true },
+    cooperativeReserve: { type: Number, required: true },
+    infrastructureCut: { type: Number, required: true },
     totalAmount: { type: Number, required: true }
   },
+
+  parts: [{
+    name: { type: String, required: true },
+    quantity: { type: Number, default: 1 },
+    unitCost: { type: Number, required: true },
+    total: { type: Number, required: true }
+  }],
 
   status: {
     type: String,

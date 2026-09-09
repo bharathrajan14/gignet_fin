@@ -257,6 +257,13 @@ export async function processDemoPayment(req, res) {
       reason: `Customer completed demo payment of ₹${invoice.breakdown.totalAmount} via ${paymentMethod}.`
     });
 
+    // Credit Cooperative Welfare Reserve Fund
+    if (invoice.cooperativeId) {
+      await Cooperative.findByIdAndUpdate(invoice.cooperativeId, {
+        $inc: { reserveFundBalance: invoice.breakdown.cooperativeReserve || 50 }
+      });
+    }
+
     const io = getSocketIO();
     if (io) {
       io.to(`booking:${bookingId}`).emit('payment:confirmed', {
@@ -268,6 +275,16 @@ export async function processDemoPayment(req, res) {
       io.to(`worker:${invoice.workerId}`).emit('payment:confirmed', {
         bookingId,
         amountCredited: invoice.breakdown.workerPayout
+      });
+      io.to('admin').emit('admin:payment_received', {
+        bookingId,
+        cooperativeId: invoice.cooperativeId,
+        reserveCredited: invoice.breakdown.cooperativeReserve,
+        totalAmount: invoice.breakdown.totalAmount
+      });
+      io.emit('booking:status_update', {
+        bookingId,
+        status: 'PAID'
       });
     }
 

@@ -53,11 +53,19 @@ const BookingSchema = new mongoose.Schema({
   pricing: {
     baseAmount: { type: Number, required: true },
     emergencySurcharge: { type: Number, default: 0 },
+    materialsCost: { type: Number, default: 0 },
     platformFee: { type: Number, default: 0 },
     cooperativeReserve: { type: Number, default: 0 },
     workerPayout: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true }
   },
+
+  partsUsed: [{
+    name: { type: String, required: true },
+    quantity: { type: Number, default: 1 },
+    unitCost: { type: Number, required: true },
+    total: { type: Number, required: true }
+  }],
 
   cancellation: {
     cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },

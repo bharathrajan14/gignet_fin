@@ -184,19 +184,52 @@ export async function handleOfferResponse({ offerId, workerId, isAccepted, rejec
     });
 
     if (io) {
-      // Notify customer
-      io.to(`user:${booking.customerId._id || booking.customerId}`).emit('booking:worker_assigned', {
+      const workerPayload = {
+        id: worker._id,
+        badgeNumber: worker.badgeNumber,
+        rating: worker.rating?.average || 5.0,
+        reliability: worker.reliabilityScore,
+        phone: worker.userId?.phoneNumber || '+91 9876543210'
+      };
+
+      // 1. Notify specific booking room (customer ActiveBookingPage joins this)
+      io.to(`booking:${booking._id}`).emit('booking:worker_assigned', {
         bookingId: booking._id,
-        worker: {
-          id: worker._id,
-          badgeNumber: worker.badgeNumber,
-          rating: worker.rating?.average || 5.0,
-          reliability: worker.reliabilityScore,
-          phone: worker.userId?.phoneNumber || '+91 9876543210'
-        }
+        worker: workerPayload,
+        status: 'CONFIRMED'
+      });
+      io.to(`booking:${booking._id}`).emit('booking:status_update', {
+        bookingId: booking._id,
+        status: 'CONFIRMED',
+        assignedWorker: workerPayload
       });
 
-      // Notify admin monitor
+      // 2. Notify customer user room directly
+      const customerUserId = booking.customerId?.userId || booking.customerId;
+      if (customerUserId) {
+        io.to(`user:${customerUserId}`).emit('booking:worker_assigned', {
+          bookingId: booking._id,
+          worker: workerPayload,
+          status: 'CONFIRMED'
+        });
+      }
+      if (booking.customerId?._id) {
+        io.to(`user:${booking.customerId._id}`).emit('booking:worker_assigned', {
+          bookingId: booking._id,
+          worker: workerPayload,
+          status: 'CONFIRMED'
+        });
+      }
+
+      // 3. Global broadcast for real-time synchronization
+      io.emit('booking:status_update', {
+        bookingId: booking._id,
+        status: 'CONFIRMED',
+        assignedWorkerId: worker._id,
+        assignedWorker: workerPayload
+      });
+
+      // 4. Notify admin monitor
       io.to('admin').emit('admin:job_confirmed', {
         bookingId: booking._id,
         bookingNumber: booking.bookingNumber,

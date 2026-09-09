@@ -367,7 +367,10 @@ export async function createSharingRequest(req, res) {
 
 export async function getFinancialReconciliation(req, res) {
   try {
-    const invoices = await Invoice.find().populate('cooperativeId');
+    const invoices = await Invoice.find()
+      .populate('cooperativeId')
+      .populate({ path: 'bookingId', populate: { path: 'customerId serviceId assignedWorkerId' } })
+      .sort({ createdAt: -1 });
     const coops = await Cooperative.find();
 
     let totalServiceGross = 0;
@@ -376,10 +379,10 @@ export async function getFinancialReconciliation(req, res) {
     let totalPlatformFee = 0;
 
     invoices.forEach(inv => {
-      totalServiceGross += inv.breakdown.totalAmount || 0;
-      totalWorkerPayouts += inv.breakdown.workerPayout || 0;
-      totalCoopReserve += inv.breakdown.cooperativeReserve || 0;
-      totalPlatformFee += inv.breakdown.infrastructureCut || 0;
+      totalServiceGross += inv.breakdown?.totalAmount || 0;
+      totalWorkerPayouts += inv.breakdown?.workerPayout || 0;
+      totalCoopReserve += inv.breakdown?.cooperativeReserve || 0;
+      totalPlatformFee += inv.breakdown?.infrastructureCut || 0;
     });
 
     return res.status(200).json({
@@ -389,6 +392,7 @@ export async function getFinancialReconciliation(req, res) {
         totalWorkerPayouts,
         totalCoopReserve,
         totalPlatformFee,
+        invoices: invoices.slice(0, 15),
         cooperatives: coops.map(c => ({
           id: c._id,
           name: c.name,

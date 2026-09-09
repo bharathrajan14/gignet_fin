@@ -8,7 +8,8 @@ import {
   getActiveJob,
   advanceJobStatus,
   getEarnings,
-  uploadKyc
+  uploadKyc,
+  completeJobWithParts
 } from '../controllers/workerController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 
@@ -23,6 +24,7 @@ router.get('/offers/pending', getPendingOffers);
 router.post('/offers/:offerId/respond', respondToOffer);
 router.get('/jobs/current', getActiveJob);
 router.put('/jobs/:id/status', advanceJobStatus);
+router.post('/jobs/:id/complete-with-parts', completeJobWithParts);
 router.get('/earnings', getEarnings);
 router.post('/kyc', uploadKyc);
 

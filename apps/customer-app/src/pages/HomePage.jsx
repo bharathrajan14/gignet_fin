@@ -1,38 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { 
+  Search,
   Zap, 
   Calendar, 
   Wrench, 
   Sparkles, 
   ShieldCheck, 
-  MapPin, 
-  ArrowRight, 
   Clock, 
   AlertTriangle,
   Cpu,
   Hammer,
   Check,
   Building,
-  Info,
-  Layers
+  ChevronRight,
+  Paintbrush,
+  Snowflake,
+  Star,
+  MapPin,
+  X,
+  Flame
 } from 'lucide-react';
-import { LeafletMap } from '../components/LeafletMap';
 
-export function HomePage({ onBookingCreated }) {
+export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooking }) {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [bookingType, setBookingType] = useState('EMERGENCY'); // 'EMERGENCY' or 'SCHEDULED'
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedService, setSelectedService] = useState(null);
-  const [selectedOption, setSelectedOption] = useState('standard'); // 'standard', 'comprehensive', 'premium'
-  const [selectedSlot, setSelectedSlot] = useState('Today (4:00 PM - 6:00 PM)');
-  const [notes, setNotes] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   // Default Bengaluru location
-  const [customerCoords, setCustomerCoords] = useState([77.6245, 12.9352]); // [lon, lat]
-  const [addressText, setAddressText] = useState('12th Main, Koramangala 4th Block, Bengaluru');
+  const [customerCoords] = useState([77.6245, 12.9352]); // [lon, lat]
+  const [addressText] = useState('12th Main, Koramangala 4th Block, Bengaluru');
 
   useEffect(() => {
     fetchServices();
@@ -52,458 +52,528 @@ export function HomePage({ onBookingCreated }) {
     }
   };
 
-  const categories = [
-    { id: 'ALL', label: 'All Services' },
-    { id: 'PLUMBING', label: 'Plumbing', icon: Wrench },
-    { id: 'ELECTRICAL', label: 'Electrical', icon: Zap },
-    { id: 'APPLIANCE', label: 'Appliances & AC', icon: Cpu },
-    { id: 'CARPENTRY', label: 'Carpentry', icon: Hammer },
-    { id: 'CLEANING', label: 'Cleaning', icon: Sparkles },
+  // 8 Grid Categories from Screenshot 1
+  const categoryCards = [
+    {
+      id: 'EMERGENCY_PLUMBING',
+      category: 'PLUMBING',
+      name: 'Emergency Plumbing',
+      icon: Wrench,
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/10 border-sky-500/20',
+      defaultType: 'EMERGENCY',
+      desc: 'Urgent pipeline burst, tap flood, drainage blockage requiring immediate response',
+      options: ['Pipe repair', 'Leakage', 'Tap repair', 'Drainage', 'Water connection'],
+      startingPrice: 249,
+      duration: '30–45 mins',
+      rating: 4.8
+    },
+    {
+      id: 'SCHEDULED_PLUMBING',
+      category: 'PLUMBING',
+      name: 'Scheduled Plumbing',
+      icon: Wrench,
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/10 border-sky-500/20',
+      defaultType: 'SCHEDULED',
+      desc: 'Fixture installation, geyser line setup, bathroom sanitary fitting and maintenance',
+      options: ['Faucet replacement', 'Geyser pipeline', 'Water tank cleaning', 'Sanitary fittings'],
+      startingPrice: 199,
+      duration: '45–60 mins',
+      rating: 4.7
+    },
+    {
+      id: 'ELECTRICAL_SERVICE',
+      category: 'ELECTRICAL',
+      name: 'Electrical Service',
+      icon: Zap,
+      iconColor: 'text-amber-400',
+      iconBg: 'bg-amber-500/10 border-amber-500/20',
+      defaultType: 'SCHEDULED',
+      desc: 'Switchboard repair, short circuit fixes, fan/light wiring and power surge diagnosis',
+      options: ['Short circuit fix', 'Switchboard install', 'MCB replacement', 'Ceiling fan wiring'],
+      startingPrice: 299,
+      duration: '30–60 mins',
+      rating: 4.9
+    },
+    {
+      id: 'HOME_CLEANING',
+      category: 'CLEANING',
+      name: 'Home Cleaning',
+      icon: Sparkles,
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/10 border-emerald-500/20',
+      defaultType: 'SCHEDULED',
+      desc: 'Deep kitchen scrubbing, bathroom sanitization, floor buffing and complete home disinfection',
+      options: ['Kitchen deep clean', 'Bathroom sanitization', 'Floor scrub', 'Sofa shampoo'],
+      startingPrice: 349,
+      duration: '2–3 hours',
+      rating: 4.7
+    },
+    {
+      id: 'CARPENTRY_WOODWORK',
+      category: 'CARPENTRY',
+      name: 'Carpentry & Woodwork',
+      icon: Hammer,
+      iconColor: 'text-pink-400',
+      iconBg: 'bg-pink-500/10 border-pink-500/20',
+      defaultType: 'SCHEDULED',
+      desc: 'Door latch repair, furniture assembly, hinge realignment and cabinet fabrication',
+      options: ['Door lock fix', 'Hinge replacement', 'Bed assembly', 'Shelf mounting'],
+      startingPrice: 249,
+      duration: '1–2 hours',
+      rating: 4.8
+    },
+    {
+      id: 'PAINTING_WATERPROOFING',
+      category: 'MASONRY',
+      name: 'Painting & Waterproofing',
+      icon: Paintbrush,
+      iconColor: 'text-fuchsia-400',
+      iconBg: 'bg-fuchsia-500/10 border-fuchsia-500/20',
+      defaultType: 'SCHEDULED',
+      desc: 'Wall seepage treatment, touch-up painting, roof waterproofing coat application',
+      options: ['Wall seepage fix', 'Balcony waterproofing', 'Room repaint', 'Crack filling'],
+      startingPrice: 499,
+      duration: '3–4 hours',
+      rating: 4.6
+    },
+    {
+      id: 'APPLIANCE_REPAIR',
+      category: 'APPLIANCE',
+      name: 'Appliance Repair',
+      icon: Cpu,
+      iconColor: 'text-indigo-400',
+      iconBg: 'bg-indigo-500/10 border-indigo-500/20',
+      defaultType: 'SCHEDULED',
+      desc: 'Washing machine motor fix, refrigerator cooling issues, microwave diagnosis',
+      options: ['Washing machine fix', 'Refrigerator cooling', 'Microwave repair', 'Motor replacement'],
+      startingPrice: 299,
+      duration: '45–60 mins',
+      rating: 4.8
+    },
+    {
+      id: 'HVAC_AC_SERVICE',
+      category: 'APPLIANCE',
+      name: 'HVAC & AC Service',
+      icon: Snowflake,
+      iconColor: 'text-cyan-400',
+      iconBg: 'bg-cyan-500/10 border-cyan-500/20',
+      defaultType: 'SCHEDULED',
+      desc: 'Split AC filter foam clean, gas charging, cooling coil repair, outdoor unit servicing',
+      options: ['AC filter deep clean', 'Gas leak recharge', 'PCB circuit fix', 'Water dripping fix'],
+      startingPrice: 399,
+      duration: '1–2 hours',
+      rating: 4.9
+    }
   ];
 
-  const filteredServices = services.filter((s) => {
-    if (selectedCategory !== 'ALL' && s.category !== selectedCategory) return false;
-    return true;
-  });
+  // Recommended list cards matching Screenshot 1
+  const recommendedItems = [
+    {
+      id: 'rec-1',
+      category: 'PLUMBING',
+      title: 'Scheduled Plumbing',
+      subtitle: 'From ₹199 • 45–60 mins',
+      rating: '4.7',
+      icon: Wrench,
+      iconColor: 'text-sky-400',
+      iconBg: 'bg-sky-500/15',
+      desc: 'Comprehensive society plumbing inspection, fixture installation & pipe leak seal.',
+      options: ['Pipe repair', 'Leakage', 'Tap repair', 'Drainage', 'Water connection'],
+      startingPrice: 199,
+      duration: '45–60 mins'
+    },
+    {
+      id: 'rec-2',
+      category: 'ELECTRICAL',
+      title: 'Electrical Service',
+      subtitle: 'From ₹299 • 30–60 mins',
+      rating: '4.9',
+      icon: Zap,
+      iconColor: 'text-amber-400',
+      iconBg: 'bg-amber-500/15',
+      desc: 'Certified society electrician for short circuits, MCB repair, switchboard rewiring.',
+      options: ['Short circuit fix', 'Switchboard install', 'MCB replacement', 'Ceiling fan wiring'],
+      startingPrice: 299,
+      duration: '30–60 mins'
+    },
+    {
+      id: 'rec-3',
+      category: 'CLEANING',
+      title: 'Home Cleaning',
+      subtitle: 'From ₹349 • 2–3 hours',
+      rating: '4.7',
+      icon: Sparkles,
+      iconColor: 'text-emerald-400',
+      iconBg: 'bg-emerald-500/15',
+      desc: 'Deep home sanitization, kitchen chimney degreasing and tile scrubbing.',
+      options: ['Kitchen deep clean', 'Bathroom sanitization', 'Floor scrub', 'Sofa shampoo'],
+      startingPrice: 349,
+      duration: '2–3 hours'
+    }
+  ];
 
-  const getOptionAddonPrice = (optionKey) => {
-    if (optionKey === 'comprehensive') return 150;
-    if (optionKey === 'premium') return 350;
-    return 0;
+  const handleOpenBookingModal = (item, defaultBookingType = 'SCHEDULED') => {
+    // Find matching service from backend catalog, or create virtual matching item
+    const matchedBackendService = services.find(
+      (s) => s.category === item.category || s.name.toLowerCase().includes(item.name?.toLowerCase() || '')
+    ) || services[0] || {
+      _id: '65f000000000000000000001',
+      name: item.name || item.title,
+      category: item.category,
+      basePrice: item.startingPrice || 249,
+      emergencyMultiplier: 1.5,
+      estimatedDurationMinutes: 45
+    };
+
+    const initialOpts = item.options || ['Pipe repair', 'Leakage', 'Tap repair', 'Drainage', 'Water connection'];
+    setSelectedOptions(initialOpts);
+    setSelectedService({
+      ...matchedBackendService,
+      displayName: item.name || item.title,
+      description: item.desc,
+      startingPrice: item.startingPrice || matchedBackendService.basePrice || 249,
+      duration: item.duration || `${matchedBackendService.estimatedDurationMinutes || 45} mins`,
+      rating: item.rating || 4.8,
+      defaultType: defaultBookingType,
+      availableOptions: initialOpts
+    });
   };
 
-  const calculateTotalPrice = (service, type, optionKey) => {
-    if (!service) return 0;
-    const base = service.basePrice;
-    const optionAddon = getOptionAddonPrice(optionKey);
-    const emergencySurcharge = type === 'EMERGENCY'
-      ? Math.round(base * ((service.emergencyMultiplier || 1.5) - 1.0))
-      : 0;
-    const welfareFund = 15;
-    return base + optionAddon + emergencySurcharge + welfareFund;
+  const toggleOption = (opt) => {
+    setSelectedOptions((prev) => 
+      prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt]
+    );
   };
 
-  const handleBookService = async () => {
+  const handleConfirmBooking = async (bookingType) => {
     if (!selectedService) return;
     try {
       setSubmitting(true);
+      const targetService = services.find((s) => s._id === selectedService._id) ||
+                            services.find((s) => s.category === selectedService.category) ||
+                            services[0];
+      const serviceId = targetService?._id;
+
       const res = await api.post('/customer/bookings', {
-        serviceId: selectedService._id,
+        serviceId,
         bookingType,
         customerLocation: customerCoords,
-        addressText: notes ? `${addressText} (Notes: ${notes})` : addressText,
+        addressText: `${addressText} (Options: ${selectedOptions.join(', ') || 'Standard Inspection'})`,
         scheduledFor: bookingType === 'SCHEDULED' ? new Date(Date.now() + 7200000).toISOString() : null
       });
 
       if (res.data.success) {
         setSelectedService(null);
-        setNotes('');
         if (typeof onBookingCreated === 'function') {
           onBookingCreated(res.data.data);
         }
       }
     } catch (err) {
-      alert('Failed to create booking: ' + (err.response?.data?.message || err.message));
+      alert('Failed to book service: ' + (err.response?.data?.message || err.message));
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Filter categories and recommended if user types in search bar
+  const filteredCategories = categoryCards.filter((c) =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="p-4 pb-24 space-y-5 text-slate-100">
-      {/* Emergency vs Scheduled Switcher */}
-      <div className="bg-slate-950/80 p-1 rounded-2xl flex border border-slate-800 shadow-inner">
-        <button
-          onClick={() => setBookingType('EMERGENCY')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-            bookingType === 'EMERGENCY'
-              ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-lg shadow-rose-500/20'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Zap className="w-3.5 h-3.5 fill-current" />
-          <span>⚡ Emergency (30m)</span>
-        </button>
-        <button
-          onClick={() => setBookingType('SCHEDULED')}
-          className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-            bookingType === 'SCHEDULED'
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-600/20'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Calendar className="w-3.5 h-3.5" />
-          <span>📅 Scheduled (Fair Care)</span>
-        </button>
+    <div className="p-4 pb-24 space-y-4 text-slate-100 font-['Plus_Jakarta_Sans',sans-serif]">
+      {/* Live Sync Active Header Indicator */}
+      <div className="flex items-center justify-end gap-1.5 text-[11px] text-emerald-400 font-semibold px-1">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <span>Cross-App Live Sync Active</span>
       </div>
 
-      {/* Emergency / Scheduled Explanatory Banner */}
-      {bookingType === 'EMERGENCY' ? (
-        <div className="bg-gradient-to-r from-rose-950/80 via-slate-900 to-amber-950/80 border border-rose-800/40 rounded-2xl p-4 text-white shadow-xl shadow-rose-950/20">
-          <div className="flex items-start gap-3">
-            <div className="bg-rose-500/20 text-rose-400 p-2 rounded-xl border border-rose-500/30">
-              <AlertTriangle className="w-5 h-5 text-rose-400" />
+      {/* Active Booking Floating Banner if exists */}
+      {hasActiveBooking && (
+        <div 
+          onClick={onViewActiveBooking}
+          className="bg-gradient-to-r from-sky-950 via-slate-900 to-indigo-950 border border-sky-500/50 rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:border-sky-400 transition shadow-lg shadow-sky-950/40"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+              <Zap className="w-4 h-4 fill-current animate-bounce" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-black text-sm tracking-tight text-white">Rapid Emergency Dispatch</h3>
-                <span className="text-[10px] uppercase font-bold bg-rose-500/30 text-rose-300 px-1.5 py-0.5 rounded">30-Min SLA</span>
-              </div>
-              <p className="text-xs text-rose-200/90 mt-1 leading-relaxed">
-                Prioritizes nearest verified society technicians (70% distance weight). Immediate response for pipe bursts, blackouts, or gas leaks.
-              </p>
+              <p className="text-xs font-black text-white">Active Booking in Progress</p>
+              <p className="text-[10px] text-sky-300">Tap to view live technician map & bill</p>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-teal-950/80 border border-emerald-800/40 rounded-2xl p-4 text-white shadow-xl shadow-emerald-950/20">
-          <div className="flex items-start gap-3">
-            <div className="bg-emerald-500/20 text-emerald-400 p-2 rounded-xl border border-emerald-500/30">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-black text-sm tracking-tight text-white">Cooperative Fair Allocation</h3>
-                <span className="text-[10px] uppercase font-bold bg-emerald-500/30 text-emerald-300 px-1.5 py-0.5 rounded">+0.08 Local Bonus</span>
-              </div>
-              <p className="text-xs text-emerald-200/90 mt-1 leading-relaxed">
-                Prioritizes worker workload balance (60% weight) to prevent burnout, paired with verified local guild technicians.
-              </p>
-            </div>
-          </div>
+          <span className="text-xs font-bold text-sky-400 flex items-center">
+            Track <ChevronRight className="w-4 h-4" />
+          </span>
         </div>
       )}
 
-      {/* Location Bar with H3 Hex Cell */}
-      <div className="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 shadow-sm flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
-          <MapPin className="w-4 h-4" />
+      {/* 1. Search Bar (Matching Screenshot 1) */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+          <Search className="w-4 h-4" />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Service Location</span>
-            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/50 px-2 py-0.5 rounded-full">
-              H3 Hex #87608b2
-            </span>
-          </div>
-          <p className="text-xs font-semibold text-slate-200 truncate mt-0.5">{addressText}</p>
-        </div>
-      </div>
-
-      {/* Category Pills */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Service Categories</span>
-          <span className="text-[10px] text-slate-400 font-bold">{filteredServices.length} Options</span>
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 border ${
-                selectedCategory === cat.id
-                  ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black'
-                  : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-              }`}
-            >
-              {cat.icon && <cat.icon className="w-3.5 h-3.5" />}
-              <span>{cat.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Services List */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider">
-            Available Cooperative Services ({filteredServices.length})
-          </h2>
-          <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5" /> 100% Certified
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="py-16 text-center text-slate-500 text-xs font-semibold">
-            Loading cooperative service catalog...
-          </div>
-        ) : filteredServices.length === 0 ? (
-          <div className="bg-slate-950/60 rounded-2xl p-8 text-center text-slate-500 border border-slate-800 text-xs font-bold">
-            No services found in this category.
-          </div>
-        ) : (
-          filteredServices.map((svc) => {
-            const displayPrice = bookingType === 'EMERGENCY'
-              ? Math.round(svc.basePrice * (svc.emergencyMultiplier || 1.5))
-              : svc.basePrice;
-
-            return (
-              <div
-                key={svc._id}
-                onClick={() => {
-                  setSelectedService(svc);
-                  setSelectedOption('standard');
-                }}
-                className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800/90 hover:border-emerald-500/60 transition-all hover:shadow-lg hover:shadow-emerald-500/5 cursor-pointer flex flex-col justify-between gap-3 group"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md uppercase bg-slate-900 border border-slate-800 text-emerald-400">
-                          {svc.category}
-                        </span>
-                        {bookingType === 'EMERGENCY' && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                            Urgent SLA
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="font-extrabold text-white text-sm mt-1.5 group-hover:text-emerald-400 transition">
-                        {svc.name}
-                      </h4>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-base font-black text-white">₹{displayPrice}</span>
-                      <p className="text-[10px] text-slate-400 font-medium">Standard rate</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 leading-relaxed font-normal">
-                    {svc.description}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between pt-2.5 border-t border-slate-800/80 text-xs">
-                  <div className="flex items-center gap-3 text-slate-400 font-medium text-[11px]">
-                    <span className="flex items-center gap-1 text-slate-400">
-                      <Clock className="w-3.5 h-3.5 text-slate-400" />
-                      {svc.estimatedDurationMinutes} mins
-                    </span>
-                    <span className="text-emerald-400/90 font-semibold flex items-center gap-1">
-                      <Building className="w-3 h-3" /> Society Direct
-                    </span>
-                  </div>
-                  <button className="flex items-center gap-1 text-xs font-extrabold text-emerald-400 group-hover:translate-x-1 transition">
-                    Book Service <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search 14+ services (e.g. AC repair, tap leak, CCTV)..."
+          className="w-full bg-[#111928] border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition shadow-inner"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white"
+          >
+            <X className="w-4 h-4" />
+          </button>
         )}
       </div>
 
-      {/* UPGRADED COOPERATIVE BOOKING MODAL */}
+      {/* 2. Urgent SLA SOS Hero Banner (Matching Screenshot 1) */}
+      <div className="relative overflow-hidden rounded-3xl p-4 border border-amber-600/40 bg-gradient-to-r from-[#2c120a] via-[#1c1424] to-[#121927] shadow-xl shadow-red-950/20">
+        {/* Glow ambient */}
+        <div className="absolute -top-12 -left-12 w-32 h-32 bg-red-600/20 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative flex items-center justify-between gap-3">
+          <div className="space-y-1.5 flex-1 pr-1">
+            <div className="flex items-center gap-2">
+              <span className="bg-[#e11d48] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-wider shadow-sm">
+                URGENT SLA
+              </span>
+              <h3 className="font-extrabold text-sm text-white leading-tight">
+                Emergency Service Needed?
+              </h3>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-snug">
+              Pipeline burst, power failure, short circuit? Dispatched under 15 mins.
+            </p>
+          </div>
+
+          <button
+            onClick={() => handleOpenBookingModal(categoryCards[0], 'EMERGENCY')}
+            className="flex-shrink-0 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-red-600/40 active:scale-95 transition flex items-center gap-1.5"
+          >
+            Instant SOS
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Service Categories (Matching Screenshot 1 - 8 Squircle Grid) */}
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-sm font-extrabold text-white">Service Categories</h2>
+          <span className="text-xs font-bold text-sky-400 hover:underline cursor-pointer">
+            14 Services Available
+          </span>
+        </div>
+
+        {/* 4 columns x 2 rows grid */}
+        <div className="grid grid-cols-4 gap-2.5">
+          {filteredCategories.map((cat) => {
+            const IconComponent = cat.icon;
+            return (
+              <div
+                key={cat.id}
+                onClick={() => handleOpenBookingModal(cat, cat.defaultType)}
+                className="bg-[#121a2d] hover:bg-[#18233c] border border-slate-800/90 hover:border-sky-500/50 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:scale-[1.02] group shadow-sm min-h-[96px]"
+              >
+                <div className={`w-10 h-10 rounded-xl ${cat.iconBg} border flex items-center justify-center mb-1.5 group-hover:scale-110 transition`}>
+                  <IconComponent className={`w-5 h-5 ${cat.iconColor}`} />
+                </div>
+                <span className="text-[11px] font-bold text-slate-200 group-hover:text-white leading-tight line-clamp-2">
+                  {cat.name}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4. Recommended Services (Matching Screenshot 1) */}
+      <div className="space-y-2.5 pt-1">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-sm font-extrabold text-white">Recommended Services</h2>
+          <span className="text-xs font-semibold text-slate-400">Verified Cooperative</span>
+        </div>
+
+        <div className="space-y-2.5">
+          {recommendedItems.map((rec) => {
+            const RecIcon = rec.icon;
+            return (
+              <div
+                key={rec.id}
+                onClick={() => handleOpenBookingModal(rec, 'SCHEDULED')}
+                className="bg-[#121a2d] hover:bg-[#18233c] border border-slate-800/80 hover:border-sky-500/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 cursor-pointer transition-all hover:shadow-md group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-11 h-11 rounded-xl ${rec.iconBg} border border-slate-800 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition`}>
+                    <RecIcon className={`w-5 h-5 ${rec.iconColor}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-extrabold text-sm text-white group-hover:text-sky-400 transition truncate">
+                      {rec.title}
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">
+                      {rec.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 flex-shrink-0">
+                  <Star className="w-3.5 h-3.5 fill-amber-400" />
+                  <span>{rec.rating}</span>
+                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 5. Service Booking Modal (Matching Screenshot 2) */}
       {selectedService && (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center animate-in fade-in duration-200">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-950/85 backdrop-blur-md transition-opacity"
+            className="fixed inset-0 bg-black/85 backdrop-blur-sm transition-opacity"
             onClick={() => setSelectedService(null)}
           />
 
-          {/* Modal Container */}
-          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto z-10 text-white animate-in slide-in-from-bottom duration-250">
-            {/* Grab Bar */}
-            <div className="w-12 h-1.5 bg-slate-800 rounded-full mx-auto -mt-1 mb-1 sm:hidden" />
+          {/* Bottom Sheet Card */}
+          <div className="relative w-full max-w-md bg-[#0f172a] border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto z-10 text-white animate-in slide-in-from-bottom duration-250">
+            {/* Grab Bar for mobile */}
+            <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto -mt-1 mb-1 sm:hidden" />
 
-            {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-slate-800/80 pb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                    bookingType === 'EMERGENCY'
-                      ? 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                      : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                  }`}>
-                    {bookingType} DISPATCH
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-800 px-2 py-0.5 rounded-md">
-                    {selectedService.category}
-                  </span>
-                </div>
-                <h3 className="font-black text-base text-white mt-1.5">{selectedService.name}</h3>
+            {/* Header: Cooperative Badge & Close button */}
+            <div className="flex items-start justify-between">
+              <div className="inline-flex items-center gap-1.5 bg-[#0369a1]/20 border border-[#0284c7]/50 text-sky-400 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>COOPERATIVE VERIFIED SERVICE</span>
               </div>
+
               <button
                 onClick={() => setSelectedService(null)}
-                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold flex items-center justify-center transition"
+                className="w-7 h-7 rounded-full bg-slate-800/90 text-slate-400 hover:text-white flex items-center justify-center transition"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Cooperative Verified Shield Banner */}
-            <div className="bg-gradient-to-r from-emerald-950/60 to-slate-950 border border-emerald-800/40 rounded-2xl p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 font-bold">
-                <ShieldCheck className="w-5 h-5" />
+            {/* Service Title and Subtitle */}
+            <div>
+              <h3 className="text-xl font-black text-white">
+                {selectedService.displayName || selectedService.name}
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                {selectedService.description || 'Urgent pipeline burst, tap flood, drainage blockage requiring immediate response'}
+              </p>
+            </div>
+
+            {/* 3-Column Stats Card (Starting At / Typical Time / Rating) */}
+            <div className="bg-[#141e33] border border-slate-800/90 rounded-2xl p-3.5 grid grid-cols-3 text-center">
+              <div className="border-r border-slate-800/80 pr-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                  STARTING AT
+                </span>
+                <span className="text-base font-black text-white block mt-0.5">
+                  ₹{selectedService.startingPrice || 249}
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-black text-white">Cooperative Verified</span>
-                  <span className="text-[10px] text-emerald-400 font-extrabold bg-emerald-950 px-1.5 py-0.2 rounded border border-emerald-800">
-                    100% Fair Wage
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Assigned directly to Bengaluru South Labour Welfare Society with 0% middleman commission.
-                </p>
+              <div className="border-r border-slate-800/80 px-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                  TYPICAL TIME
+                </span>
+                <span className="text-xs font-black text-sky-400 block mt-1">
+                  {selectedService.duration || '30–45 mins'}
+                </span>
+              </div>
+              <div className="pl-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                  RATING
+                </span>
+                <span className="text-xs font-black text-amber-400 flex items-center justify-center gap-1 mt-1">
+                  ★ {selectedService.rating || 4.8}
+                </span>
               </div>
             </div>
 
-            {/* Service Scope Option Chips */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                Select Service Package
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: 'standard', title: 'Inspection & Repair', fee: '+₹0', desc: 'Standard diagnosis' },
-                  { id: 'comprehensive', title: 'Full Overhaul', fee: '+₹150', desc: 'Seal + heavy repair' },
-                  { id: 'premium', title: 'Premium Parts', fee: '+₹350', desc: 'Grade-A hardware' },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setSelectedOption(opt.id)}
-                    className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all ${
-                      selectedOption === opt.id
-                        ? 'bg-emerald-500/15 border-emerald-400 text-white shadow-sm'
-                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-[11px] leading-tight block">{opt.title}</span>
-                        {selectedOption === opt.id && <Check className="w-3 h-3 text-emerald-400" />}
-                      </div>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">{opt.desc}</span>
-                    </div>
-                    <span className="text-[11px] font-black text-emerald-400 mt-1.5">{opt.fee}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Scheduled Slot Selector (when Scheduled is selected) */}
-            {bookingType === 'SCHEDULED' && (
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                  Preferred Appointment Window
+            {/* Available Repair Options (Green Selectable Pill Chips) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-extrabold text-white">
+                  Available Repair Options
                 </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    'Today (4:00 PM - 6:00 PM)',
-                    'Tomorrow (9:00 AM - 11:00 AM)',
-                    'Tomorrow (1:00 PM - 3:00 PM)',
-                    'Tomorrow (5:00 PM - 7:00 PM)',
-                  ].map((slot) => (
+                <span className="text-xs font-bold text-sky-400">
+                  {selectedOptions.length} Selected
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {(selectedService.availableOptions || [
+                  'Pipe repair',
+                  'Leakage',
+                  'Tap repair',
+                  'Drainage',
+                  'Water connection'
+                ]).map((option) => {
+                  const isChecked = selectedOptions.includes(option);
+                  return (
                     <button
-                      key={slot}
+                      key={option}
                       type="button"
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`p-2 rounded-xl text-[11px] font-bold border transition text-left ${
-                        selectedSlot === slot
-                          ? 'bg-emerald-500/20 border-emerald-400 text-white'
-                          : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      onClick={() => toggleOption(option)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${
+                        isChecked
+                          ? 'bg-emerald-950/80 border border-emerald-500 text-emerald-300 shadow-sm shadow-emerald-500/20'
+                          : 'bg-slate-900 border border-slate-800 text-slate-400 hover:border-slate-700'
                       }`}
                     >
-                      {slot}
+                      <Check className={`w-3.5 h-3.5 ${isChecked ? 'text-emerald-400' : 'opacity-0'}`} />
+                      <span>{option}</span>
                     </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Location & Mini Map Preview */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                  Dispatch Geolocation
-                </label>
-                <span className="text-[10px] text-slate-400 font-mono">12.9352°N, 77.6245°E</span>
-              </div>
-              <div className="rounded-xl overflow-hidden border border-slate-800 h-28">
-                <LeafletMap customerCoords={[customerCoords[1], customerCoords[0]]} height="112px" zoom={15} />
-              </div>
-              <p className="text-[11px] text-slate-400 font-medium truncate">{addressText}</p>
-            </div>
-
-            {/* Specific Instructions / Notes */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                Notes for Assigned Technician (Optional)
-              </label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="e.g. 2nd floor, tap leaking near kitchen counter"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
-              />
-            </div>
-
-            {/* Transparent Cooperative Price Breakdown */}
-            <div className="bg-slate-950/80 rounded-2xl p-3.5 border border-slate-800 space-y-2 text-xs">
-              <div className="flex justify-between text-slate-400">
-                <span>Base Society Labor Fee</span>
-                <span className="text-white font-semibold">₹{selectedService.basePrice}</span>
-              </div>
-
-              {selectedOption !== 'standard' && (
-                <div className="flex justify-between text-slate-400">
-                  <span>Selected Package Addon</span>
-                  <span className="text-emerald-400 font-semibold">+₹{getOptionAddonPrice(selectedOption)}</span>
-                </div>
-              )}
-
-              {bookingType === 'EMERGENCY' && (
-                <div className="flex justify-between text-rose-400">
-                  <span>Emergency 30m Surcharge (1.5x)</span>
-                  <span className="font-semibold">+₹{Math.round(selectedService.basePrice * ((selectedService.emergencyMultiplier || 1.5) - 1.0))}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between text-slate-400">
-                <span className="flex items-center gap-1">
-                  Worker Emergency & Welfare Fund <Info className="w-3 h-3 text-slate-400" />
-                </span>
-                <span className="text-emerald-400 font-semibold">₹15</span>
-              </div>
-
-              <div className="border-t border-slate-800 pt-2 flex justify-between items-center text-sm font-black">
-                <span className="text-white">Total Guaranteed Fare</span>
-                <span className="text-lg text-emerald-400 font-black">
-                  ₹{calculateTotalPrice(selectedService, bookingType, selectedOption)}
-                </span>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Confirmation CTA */}
-            <button
-              onClick={handleBookService}
-              disabled={submitting}
-              className={`w-full py-3.5 rounded-2xl font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2 ${
-                bookingType === 'EMERGENCY'
-                  ? 'bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white shadow-rose-500/20'
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-slate-950 shadow-emerald-500/20'
-              }`}
-            >
-              {submitting ? (
-                <span>Dispatching Cooperative Worker...</span>
-              ) : bookingType === 'EMERGENCY' ? (
-                <>
-                  <Zap className="w-4 h-4 fill-current" />
-                  <span>Dispatch Emergency Worker Now</span>
-                </>
-              ) : (
-                <>
-                  <Calendar className="w-4 h-4" />
-                  <span>Confirm Scheduled Booking</span>
-                </>
-              )}
-            </button>
+            {/* Society Guarantee notice */}
+            <div className="bg-slate-950/60 rounded-xl p-2.5 border border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+              <span className="flex items-center gap-1 text-slate-300">
+                <Building className="w-3.5 h-3.5 text-sky-400" />
+                Bengaluru South Labour Welfare Cooperative
+              </span>
+              <span className="text-emerald-400 font-extrabold">0% Middleman</span>
+            </div>
+
+            {/* Dual Action Buttons: Schedule Service & Emergency Service */}
+            <div className="flex gap-2.5 pt-1">
+              <button
+                id="schedule-service-btn"
+                disabled={submitting}
+                type="button"
+                onClick={() => handleConfirmBooking('SCHEDULED')}
+                className="flex-1 py-3.5 rounded-2xl bg-[#141e33] hover:bg-slate-800 border border-slate-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer"
+              >
+                <Calendar className="w-4 h-4 text-slate-400" />
+                <span>Schedule Service</span>
+              </button>
+
+              <button
+                id="emergency-service-btn"
+                disabled={submitting}
+                type="button"
+                onClick={() => handleConfirmBooking('EMERGENCY')}
+                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition active:scale-95 cursor-pointer"
+              >
+                <AlertTriangle className="w-4 h-4 fill-current" />
+                <span>Emergency Service</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -15,6 +15,8 @@ const WorkerSchema = new mongoose.Schema({
     docType: { type: String, enum: ['AADHAAR', 'VOTER_ID', 'PAN', 'TRADE_LICENSE'], required: true },
     documentNumber: { type: String, required: true },
     fileUrl: { type: String, required: true },
+    isScanned: { type: Boolean, default: true },
+    scannedAt: { type: Date, default: Date.now },
     verifiedAt: { type: Date },
     rejectionReason: { type: String, default: '' }
   }],

@@ -43,7 +43,13 @@ function MainApp() {
         <Navbar />
 
         <main className="flex-1 overflow-y-auto">
-          {activeTab === 'book' && <HomePage onBookingCreated={handleBookingCreated} />}
+          {activeTab === 'book' && (
+            <HomePage
+              onBookingCreated={handleBookingCreated}
+              hasActiveBooking={!!activeBooking}
+              onViewActiveBooking={() => setActiveTab('track')}
+            />
+          )}
           {activeTab === 'track' && (
             <ActiveBookingPage
               booking={activeBooking}
@@ -54,6 +60,23 @@ function MainApp() {
             />
           )}
           {activeTab === 'history' && <HistoryPage />}
+          {activeTab === 'favorites' && (
+            <div className="p-8 text-center space-y-4 text-slate-400">
+              <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20 mx-auto flex items-center justify-center font-bold text-2xl">
+                ♥
+              </div>
+              <h3 className="font-extrabold text-white text-base">Saved Favorite Technicians</h3>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                Quick-access direct dispatch to your trusted cooperative guild specialists.
+              </p>
+              <button
+                onClick={() => setActiveTab('book')}
+                className="px-4 py-2 rounded-xl bg-sky-500 text-slate-950 font-extrabold text-xs"
+              >
+                Browse Available Services
+              </button>
+            </div>
+          )}
           {activeTab === 'profile' && <ProfilePage />}
         </main>
 
