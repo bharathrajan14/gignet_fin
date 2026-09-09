@@ -4,7 +4,13 @@ import { useAuth } from './AuthContext';
 
 const SocketContext = createContext();
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (!envUrl) return 'http://localhost:5000';
+  return envUrl.trim().replace(/\/+$/, '').replace(/\/api\/v1\/?$/, '');
+};
+const SOCKET_URL = getSocketUrl();
 
 export function SocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
