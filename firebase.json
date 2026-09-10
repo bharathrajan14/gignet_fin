@@ -1,17 +1,14 @@
 {
   "hosting": [
     {
-      "target": "customer",
+      "target": "customer-app",
       "public": "apps/customer-app/dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
       "rewrites": [
-        {
-          "source": "/api/**",
-          "run": {
-            "serviceId": "gignet-backend",
-            "region": "asia-south1"
-          }
-        },
         {
           "source": "**",
           "destination": "/index.html"
@@ -19,17 +16,14 @@
       ]
     },
     {
-      "target": "worker",
+      "target": "worker-app",
       "public": "apps/worker-app/dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
       "rewrites": [
-        {
-          "source": "/api/**",
-          "run": {
-            "serviceId": "gignet-backend",
-            "region": "asia-south1"
-          }
-        },
         {
           "source": "**",
           "destination": "/index.html"
@@ -37,17 +31,14 @@
       ]
     },
     {
-      "target": "admin",
+      "target": "admin-app",
       "public": "apps/admin-app/dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
       "rewrites": [
-        {
-          "source": "/api/**",
-          "run": {
-            "serviceId": "gignet-backend",
-            "region": "asia-south1"
-          }
-        },
         {
           "source": "**",
           "destination": "/index.html"
