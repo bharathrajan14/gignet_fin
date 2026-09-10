@@ -30,9 +30,33 @@ export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooki
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
-  // Default Bengaluru location
-  const [customerCoords] = useState([77.6245, 12.9352]); // [lon, lat]
-  const [addressText] = useState('12th Main, Koramangala 4th Block, Bengaluru');
+  // Location state
+  const [customerCoords, setCustomerCoords] = useState([77.6245, 12.9352]); // [lon, lat]
+  const [addressText, setAddressText] = useState('12th Main, Koramangala 4th Block, Bengaluru');
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        setCustomerCoords([lon, lat]);
+        setAddressText(`Live Device GPS (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
+        setDetectingLocation(false);
+      },
+      (error) => {
+        console.warn('GPS location error:', error.message);
+        alert('Device GPS error: ' + error.message + '. Using default Koramangala location.');
+        setDetectingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   useEffect(() => {
     fetchServices();
@@ -539,6 +563,25 @@ export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooki
                   );
                 })}
               </div>
+            </div>
+
+            {/* Live GPS Location Detector Card */}
+            <div className="bg-[#141e33] border border-slate-800/90 rounded-2xl p-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Service Location</span>
+                  <p className="text-xs font-bold text-white truncate">{addressText}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={detectingLocation}
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 text-[11px] font-bold shrink-0 transition flex items-center gap-1"
+              >
+                {detectingLocation ? 'Detecting...' : '📍 Use Device GPS'}
+              </button>
             </div>
 
             {/* Society Guarantee notice */}

@@ -19,12 +19,15 @@ import {
   Layers,
   Sparkles
 } from 'lucide-react';
+import { useWorkerAuth } from '../context/WorkerAuthContext';
 import { LeafletMap } from '../components/LeafletMap';
 
 export function ActiveJobPage({ onJobFinished }) {
+  const { workerProfile } = useWorkerAuth();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [advancing, setAdvancing] = useState(false);
+  const [useDeviceGps, setUseDeviceGps] = useState(true);
 
   // Spare Parts billing state
   const [parts, setParts] = useState([]);
@@ -54,6 +57,45 @@ export function ActiveJobPage({ onJobFinished }) {
       socket.off('payment:confirmed');
     };
   }, [socket, job?._id]);
+
+  // Live HTML5 Geolocation watching when ON_THE_WAY or IN_PROGRESS
+  useEffect(() => {
+    if (!job || !['ON_THE_WAY', 'IN_PROGRESS'].includes(job.status)) return;
+    if (!socket || !workerProfile?._id) return;
+
+    let watchId = null;
+    if (navigator.geolocation && useDeviceGps) {
+      console.log(`[WorkerApp] Starting HTML5 watchPosition for worker ${workerProfile._id} on job ${job._id}`);
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const heading = position.coords.heading || 0;
+          const speed = position.coords.speed || 0;
+
+          socket.emit('worker:update_location', {
+            workerId: workerProfile._id,
+            bookingId: job._id,
+            latitude: lat,
+            longitude: lon,
+            heading,
+            speed
+          });
+        },
+        (err) => {
+          console.warn('[WorkerApp] Device GPS watch error:', err.message);
+        },
+        { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+      );
+    }
+
+    return () => {
+      if (watchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId);
+        console.log('[WorkerApp] Stopped HTML5 watchPosition');
+      }
+    };
+  }, [socket, workerProfile?._id, job?._id, job?.status, useDeviceGps]);
 
   const loadActiveJob = async () => {
     try {
@@ -253,6 +295,29 @@ export function ActiveJobPage({ onJobFinished }) {
           </a>
         </div>
       </div>
+
+      {/* Live Hardware GPS Telemetry Bar */}
+      {['ON_THE_WAY', 'IN_PROGRESS'].includes(job.status) && (
+        <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+            <div>
+              <p className="font-bold text-white">Live Hardware GPS Broadcasting</p>
+              <p className="text-[10px] text-slate-400">Scoped stream active → streaming to Customer & Admin map</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setUseDeviceGps(!useDeviceGps)}
+            className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition ${
+              useDeviceGps
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                : 'bg-slate-800 text-slate-400 border-slate-700'
+            }`}
+          >
+            {useDeviceGps ? 'GPS: Real Hardware' : 'GPS: Simulation Mode'}
+          </button>
+        </div>
+      )}
 
       {/* Navigation Map */}
       <div className="rounded-3xl overflow-hidden border border-slate-800 shadow-md">
