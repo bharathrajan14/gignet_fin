@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useWorkerAuth } from '../context/WorkerAuthContext';
 import { api } from '../services/api';
+import { uploadKycToFirebaseStorage } from '../../../../shared/src/firebase';
 import { 
   ShieldCheck, 
   UploadCloud, 
@@ -100,16 +101,21 @@ export function KYCPage() {
 
     try {
       setUploading(true);
-      const fileUrl = capturedImage || sampleDocs[docType];
+      const rawImage = capturedImage || sampleDocs[docType];
+      // Upload camera document to Firebase Storage bucket
+      const firebaseStorageResult = await uploadKycToFirebaseStorage(rawImage, `kyc/${docType.toLowerCase()}`);
+      const fileUrl = firebaseStorageResult.downloadUrl || rawImage;
+
       const res = await api.post('/worker/kyc', {
         docType,
         documentNumber,
         fileUrl,
-        isScanned: !!capturedImage
+        isScanned: !!capturedImage,
+        storageBucket: firebaseStorageResult.storageBucket
       });
 
       if (res.data.success) {
-        setSuccessMsg('KYC document scanned and submitted to Cooperative Admin for verification!');
+        setSuccessMsg('KYC document stored on Firebase Cloud Storage & submitted for Admin Approval!');
         setDocumentNumber('');
         setCapturedImage(null);
         await refreshProfile();

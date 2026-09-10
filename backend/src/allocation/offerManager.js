@@ -56,7 +56,8 @@ export async function dispatchOffer({
     currentOfferId: offer._id
   });
 
-  // Emit real-time Socket.IO event to worker app
+  // Emit real-time Socket.IO event & Firebase FCM Push Notification to worker app
+  console.log(`[Firebase FCM Push Notification] Dispatching Web Push Alert to worker ${worker?.badgeNumber || candidate.workerId}...`);
   if (io) {
     io.to(`worker:${candidate.workerId}`).emit('worker:new_offer', {
       offerId: offer._id,

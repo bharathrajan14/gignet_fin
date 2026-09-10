@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { loginWithGoogleFirebase, sendPhoneOtpFirebase } from '../../../../shared/src/firebase';
 
 const AuthContext = createContext();
 
@@ -47,13 +48,47 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      setLoading(true);
+      const res = await loginWithGoogleFirebase('CUSTOMER');
+      if (res.success) {
+        localStorage.setItem('gignet_token', res.idToken);
+        setUser({
+          id: res.user.uid,
+          role: 'CUSTOMER',
+          fullName: res.user.displayName,
+          email: res.user.email,
+          photoURL: res.user.photoURL,
+          provider: res.provider
+        });
+        return { success: true, user: res.user };
+      }
+    } catch (err) {
+      console.error('[AuthContext] Google Login Error:', err);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithPhoneOtp = async (phoneNumber) => {
+    try {
+      const res = await sendPhoneOtpFirebase(phoneNumber);
+      return res;
+    } catch (err) {
+      console.error('[AuthContext] Phone OTP Error:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('gignet_token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, switchPersona, logout }}>
+    <AuthContext.Provider value={{ user, loading, switchPersona, loginWithGoogle, loginWithPhoneOtp, logout }}>
       {children}
     </AuthContext.Provider>
   );

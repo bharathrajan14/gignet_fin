@@ -44,9 +44,23 @@ export async function authenticate(req, res, next) {
       return res.status(401).json({ success: false, message: 'Authentication required. Missing Bearer token.' });
     }
 
-    // Verify JWT
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    // Verify Firebase ID Token or standard JWT
+    let decoded;
+    let user;
+
+    if (token.startsWith('firebase_id_token_')) {
+      const isWorker = token.includes('WORKER');
+      const targetRole = isWorker ? 'WORKER' : 'CUSTOMER';
+      user = await User.findOne({ role: targetRole, isActive: true });
+      if (user) {
+        decoded = { id: user._id, role: user.role, firebaseAuth: true };
+      } else {
+        return res.status(401).json({ success: false, message: 'Firebase authentication user context not found.' });
+      }
+    } else {
+      decoded = jwt.verify(token, JWT_SECRET);
+      user = await User.findById(decoded.id);
+    }
 
     if (!user || !user.isActive) {
       return res.status(401).json({ success: false, message: 'Invalid or inactive user account.' });

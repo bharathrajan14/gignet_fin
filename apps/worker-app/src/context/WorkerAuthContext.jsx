@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { loginWithGoogleFirebase, sendPhoneOtpFirebase } from '../../../../shared/src/firebase';
 
 const WorkerAuthContext = createContext();
 
@@ -53,6 +54,38 @@ export function WorkerAuthProvider({ children }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      setLoading(true);
+      const res = await loginWithGoogleFirebase('WORKER');
+      if (res.success) {
+        localStorage.setItem('gignet_worker_token', res.idToken);
+        setWorkerUser(res.user.uid);
+        setWorkerProfile((prev) => ({
+          ...prev,
+          fullName: res.user.displayName,
+          email: res.user.email
+        }));
+        return { success: true, user: res.user };
+      }
+    } catch (err) {
+      console.error('[WorkerAuthContext] Google Login Error:', err);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithPhoneOtp = async (phoneNumber) => {
+    try {
+      const res = await sendPhoneOtpFirebase(phoneNumber);
+      return res;
+    } catch (err) {
+      console.error('[WorkerAuthContext] Phone OTP Error:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
   const refreshProfile = async () => {
     try {
       const res = await api.get('/worker/profile');
@@ -65,7 +98,7 @@ export function WorkerAuthProvider({ children }) {
   };
 
   return (
-    <WorkerAuthContext.Provider value={{ workerUser, workerProfile, loading, switchWorkerPersona, refreshProfile }}>
+    <WorkerAuthContext.Provider value={{ workerUser, workerProfile, loading, switchWorkerPersona, loginWithGoogle, loginWithPhoneOtp, refreshProfile }}>
       {children}
     </WorkerAuthContext.Provider>
   );
