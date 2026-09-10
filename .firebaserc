@@ -1,20 +1,5 @@
 {
   "projects": {
-    "default": "gignet-sih26089"
-  },
-  "targets": {
-    "gignet-sih26089": {
-      "hosting": {
-        "customer-app": [
-          "gignet-customer"
-        ],
-        "worker-app": [
-          "gignet-worker"
-        ],
-        "admin-app": [
-          "gignet-admin"
-        ]
-      }
-    }
+    "default": "gig-nets"
   }
 }
