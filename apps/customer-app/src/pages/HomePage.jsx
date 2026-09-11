@@ -112,6 +112,7 @@ export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooki
   const [problemDescription, setProblemDescription] = useState('');
   const [isAnalyzingProblem, setIsAnalyzingProblem] = useState(false);
   const [aiClassification, setAiClassification] = useState(null);
+  const [aiError, setAiError] = useState(null);
   const [isConfirmedProblem, setIsConfirmedProblem] = useState(false);
   const [manualSelectOpen, setManualSelectOpen] = useState(false);
 
@@ -314,6 +315,7 @@ export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooki
     // Reset AI problem classification state
     setProblemDescription('');
     setAiClassification(null);
+    setAiError(null);
     setIsConfirmedProblem(false);
     setManualSelectOpen(false);
 
@@ -350,23 +352,33 @@ export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooki
   };
 
   const handleAnalyzeProblem = async () => {
-    if (!problemDescription.trim() || !selectedService) return;
+    if (!problemDescription.trim()) return;
+    if (!selectedService) return;
     try {
       setIsAnalyzingProblem(true);
+      setAiError(null);
+      setAiClassification(null);
       const res = await api.post('/customer/classify-problem', {
         description: problemDescription.trim(),
         serviceCategory: selectedService.category
       });
 
       if (res.data?.success && res.data?.data) {
-        setAiClassification(res.data.data);
+        const classification = res.data.data;
+        setAiClassification(classification);
         setIsConfirmedProblem(true);
-        if (!res.data.data.isConfident) {
+        if (!classification.isConfident) {
           setManualSelectOpen(true);
         }
+      } else {
+        setAiError('AI classification returned no result. Please select manually.');
+        setManualSelectOpen(true);
       }
     } catch (err) {
-      console.warn('Problem classification error:', err);
+      console.error('[AI] Problem classification error:', err);
+      const msg = err?.response?.data?.message || err?.message || 'AI service unavailable';
+      setAiError(`Classification failed: ${msg}. Please select your problem manually below.`);
+      setManualSelectOpen(true);
     } finally {
       setIsAnalyzingProblem(false);
     }
@@ -653,6 +665,12 @@ export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooki
                   id="problem-description-input"
                   value={problemDescription}
                   onChange={(e) => setProblemDescription(e.target.value)}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAnalyzeProblem();
+                    }
+                  }}
                   rows={2}
                   placeholder={t('ai.describePlaceholder', 'e.g. Kitchen pipe is leaking badly, ceiling fan not spinning, car tyre punctured...')}
                   className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition resize-none"
@@ -672,10 +690,18 @@ export function HomePage({ onBookingCreated, hasActiveBooking, onViewActiveBooki
                   ) : (
                     <>
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>{t('ai.analyzeBtn', 'Analyze Problem')}</span>
+                      <span>{t('ai.analyzeBtn', 'Analyze Problem')} <span className="font-normal opacity-60 text-[10px]">(Ctrl+Enter)</span></span>
                     </>
                   )}
                 </button>
+
+                {/* AI Error Display */}
+                {aiError && !aiClassification && (
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-[11px] text-rose-300 flex items-start gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-400" />
+                    <span>{aiError}</span>
+                  </div>
+                )}
               </div>
 
               {/* AI Detection Card (Translates detected problem while preserving canonical subSkillId) */}
