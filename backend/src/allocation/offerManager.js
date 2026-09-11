@@ -59,7 +59,7 @@ export async function dispatchOffer({
   // Emit real-time Socket.IO event & Firebase FCM Push Notification to worker app
   console.log(`[Firebase FCM Push Notification] Dispatching Web Push Alert to worker ${worker?.badgeNumber || candidate.workerId}...`);
   if (io) {
-    io.to(`worker:${candidate.workerId}`).emit('worker:new_offer', {
+    const offerPayload = {
       offerId: offer._id,
       bookingId: booking._id,
       bookingNumber: booking.bookingNumber,
@@ -72,7 +72,15 @@ export async function dispatchOffer({
       expiresAt: expiresAt.toISOString(),
       countdownSeconds: OFFER_COUNTDOWN_SECONDS,
       assignedWorkerBadge: worker?.badgeNumber || null
-    });
+    };
+
+    // Send real offer to the assigned worker's private room
+    io.to(`worker:${candidate.workerId}`).emit('worker:new_offer', offerPayload);
+
+    // DEMO BROADCAST: notify ALL connected clients so the worker app
+    // can highlight the assigned worker card regardless of which
+    // persona is currently active in the UI
+    io.emit('demo:job_dispatched', offerPayload);
 
     // Notify customer app: finding worker / offered
     io.to(`user:${booking.customerId}`).emit('booking:status_update', {
