@@ -14,6 +14,6 @@
     "dev:worker": "npm --prefix apps/worker-app run dev",
     "dev:admin": "npm --prefix apps/admin-app run dev",
     "seed": "npm --prefix backend run seed",
-    "forecast": "cd forecast-service && python -m uvicorn app.main:app --port 8000 --reload"
+    "forecast": "cd forecast-service && .venv\\Scripts\\python.exe -m uvicorn app.main:app --port 8000 --reload"
   }
 }

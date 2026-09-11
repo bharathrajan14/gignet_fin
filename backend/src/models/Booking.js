@@ -47,6 +47,14 @@ const BookingSchema = new mongoose.Schema({
   h3Res8: { type: String, index: true, default: '' },
   scheduledFor: { type: Date, default: null }, // Null for EMERGENCY, future Date for SCHEDULED
   
+  // AI Problem Classification (DistilBERT)
+  problemDescription: { type: String, default: '' },
+  serviceCategory: { type: String, default: '' },
+  subSkillId: { type: String, default: '', index: true },
+  classificationConfidence: { type: Number, default: 0 },
+  classificationSource: { type: String, default: '' },
+  modelVersion: { type: String, default: '' },
+
   assignedWorkerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Worker', default: null, index: true },
   currentOfferId: { type: mongoose.Schema.Types.ObjectId, ref: 'WorkerOffer', default: null },
 

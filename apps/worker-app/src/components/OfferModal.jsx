@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { useWorkerLanguage } from '../context/WorkerLanguageContext';
 import { Clock, MapPin, DollarSign, Check, X, AlertCircle, Zap } from 'lucide-react';
 
 export function OfferModal({ offer, onAccepted, onDeclined }) {
+  const { isTamil, t, getServiceName, getSubServiceName } = useWorkerLanguage();
   const [countdown, setCountdown] = useState(offer?.remainingSeconds || 45);
   const [processing, setProcessing] = useState(false);
 
@@ -49,7 +51,11 @@ export function OfferModal({ offer, onAccepted, onDeclined }) {
   };
 
   const isEmergency = offer.details?.bookingType === 'EMERGENCY' || offer.bookingType === 'EMERGENCY';
-  const serviceName = offer.details?.serviceName || offer.serviceName || 'Service Request';
+  const rawServiceName = offer.details?.serviceName || offer.serviceName || 'Service Request';
+  const serviceDisplayName = getServiceName(rawServiceName);
+  const subSkillId = offer.details?.subSkillId || offer.subSkillId;
+  const subServiceDisplayName = subSkillId ? getSubServiceName(subSkillId) : '';
+
   const distanceKm = offer.details?.distanceKm || offer.distanceKm || 2.1;
   const etaMinutes = offer.details?.etaMinutes || offer.etaMinutes || 8;
   const payout = offer.details?.estimatedPayout || offer.estimatedPayout || 540;
@@ -59,7 +65,7 @@ export function OfferModal({ offer, onAccepted, onDeclined }) {
   const progressPct = ((45 - countdown) / 45) * 100;
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200 font-['Plus_Jakarta_Sans',sans-serif]">
       <div className="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200 text-white">
         
         {/* Top Countdown Ring & Header */}
@@ -67,7 +73,9 @@ export function OfferModal({ offer, onAccepted, onDeclined }) {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
             <span className="text-[11px] font-black uppercase tracking-wider text-rose-400">
-              {isEmergency ? '⚡ Emergency Job Offer' : '📅 Scheduled Job Offer'}
+              {isEmergency 
+                ? t('emergency.offerTitle', '⚡ Emergency Job Offer') 
+                : t('scheduled.offerTitle', '📅 Scheduled Job Offer')}
             </span>
           </div>
 
@@ -86,24 +94,35 @@ export function OfferModal({ offer, onAccepted, onDeclined }) {
           />
         </div>
 
-        {/* Job Title */}
+        {/* Job Title & Sub-Service */}
         <div>
-          <h3 className="text-lg font-black text-white">{serviceName}</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Bengaluru South Labour Welfare Society</p>
+          <h3 className="text-lg font-black text-white">{serviceDisplayName}</h3>
+          {subServiceDisplayName && (
+            <p className="text-xs font-bold text-sky-400 mt-0.5">
+              {isTamil ? 'சேவை வகை: ' : 'Task: '}{subServiceDisplayName}
+            </p>
+          )}
+          <p className="text-[11px] text-slate-400 mt-0.5">{t('ui.societyName', 'Bengaluru South Labour Welfare Society')}</p>
         </div>
 
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700/60">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Distance & Transit</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">
+              {isTamil ? 'தூரம் & பயணம்' : 'Distance & Transit'}
+            </span>
             <p className="font-extrabold text-sm text-white mt-0.5">{distanceKm} km</p>
-            <p className="text-[10px] text-blue-400 font-medium">~{etaMinutes} min travel</p>
+            <p className="text-[10px] text-blue-400 font-medium">~{etaMinutes} {isTamil ? 'நிமிடம்' : 'min travel'}</p>
           </div>
 
           <div className="bg-slate-800/80 p-3 rounded-2xl border border-slate-700/60">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Net Take-Home (80%)</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">
+              {isTamil ? 'தொழிலாளர் ஊதியம் (80%)' : 'Net Take-Home (80%)'}
+            </span>
             <p className="font-extrabold text-sm text-emerald-400 mt-0.5">₹{payout}</p>
-            <p className="text-[10px] text-emerald-500/80 font-medium">Direct worker payout</p>
+            <p className="text-[10px] text-emerald-500/80 font-medium">
+              {isTamil ? 'நேரடி வங்கி பரிமாற்றம்' : 'Direct worker payout'}
+            </p>
           </div>
         </div>
 
@@ -118,19 +137,19 @@ export function OfferModal({ offer, onAccepted, onDeclined }) {
           <button
             disabled={processing}
             onClick={() => handleRespond(false)}
-            className="flex-1 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700"
+            className="flex-1 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 cursor-pointer"
           >
             <X className="w-4 h-4" />
-            <span>Decline</span>
+            <span>{t('ui.declineJob', 'Decline')}</span>
           </button>
 
           <button
             disabled={processing}
             onClick={() => handleRespond(true)}
-            className="flex-[2] py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition"
+            className="flex-[2] py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition cursor-pointer"
           >
             <Check className="w-5 h-5 stroke-[3]" />
-            <span>Accept Job</span>
+            <span>{t('ui.acceptJob', 'Accept Job')}</span>
           </button>
         </div>
       </div>

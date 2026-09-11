@@ -306,7 +306,16 @@ export async function seedDatabase() {
     kycStatus: 'VERIFIED',
     isOnline: true,
     isAvailable: true,
-    skills: ['PLUMBING_BASIC', 'PIPE_FITTING'],
+    skills: [
+      'PLUMBING_BASIC',
+      'PIPE_FITTING',
+      'plumber_pipe_leakage',
+      'plumber_tap_leakage',
+      'plumber_drain_blockage',
+      'plumber_toilet_repair',
+      'plumber_water_pump_repair',
+      'plumber_bathroom_fitting'
+    ],
     rating: { average: 4.9, count: 48 },
     reliabilityScore: 98,
     fairnessMetrics: {
@@ -341,7 +350,14 @@ export async function seedDatabase() {
     kycStatus: 'VERIFIED',
     isOnline: true,
     isAvailable: true,
-    skills: ['PLUMBING_BASIC', 'PIPE_FITTING'],
+    skills: [
+      'PLUMBING_BASIC',
+      'PIPE_FITTING',
+      'plumber_pipe_leakage',
+      'plumber_tap_leakage',
+      'plumber_drain_blockage',
+      'plumber_bathroom_fitting'
+    ],
     rating: { average: 4.8, count: 62 },
     reliabilityScore: 95,
     fairnessMetrics: {
@@ -376,7 +392,13 @@ export async function seedDatabase() {
     kycStatus: 'VERIFIED',
     isOnline: true,
     isAvailable: true,
-    skills: ['PLUMBING_BASIC', 'PIPE_FITTING'],
+    skills: [
+      'PLUMBING_BASIC',
+      'PIPE_FITTING',
+      'plumber_pipe_leakage',
+      'plumber_tap_leakage',
+      'plumber_toilet_repair'
+    ],
     rating: { average: 4.7, count: 32 },
     reliabilityScore: 94,
     fairnessMetrics: {
@@ -418,7 +440,14 @@ export async function seedDatabase() {
     kycStatus: 'VERIFIED',
     isOnline: true,
     isAvailable: true,
-    skills: ['ELECTRICAL_SAFETY'],
+    skills: [
+      'ELECTRICAL_SAFETY',
+      'electrician_fan',
+      'electrician_washing_machine',
+      'electrician_kitchen_items',
+      'electrician_installation',
+      'electrician_wiring'
+    ],
     certifications: [{
       code: 'ELEC_HV_CERT',
       name: 'Govt Certified High-Voltage Domestic Electrician',
@@ -494,7 +523,14 @@ export async function seedDatabase() {
     kycStatus: 'VERIFIED',
     isOnline: true,
     isAvailable: true,
-    skills: ['CARPENTRY_SKILL'],
+    skills: [
+      'CARPENTRY_SKILL',
+      'carpenter_door_repair',
+      'carpenter_furniture_repair',
+      'carpenter_cupboard_repair',
+      'carpenter_bed_repair',
+      'carpenter_shelf_installation'
+    ],
     rating: { average: 4.88, count: 39 },
     fairnessMetrics: {
       completedJobsCount: 17,

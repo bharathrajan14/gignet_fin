@@ -1,11 +1,13 @@
 import WorkerSchedule from '../models/WorkerSchedule.js';
 import { ALLOCATION_WEIGHTS } from '../shared/contracts.js';
 import { calculateDistanceKm, estimateTravelMinutes } from '../utils/geoUtils.js';
+import { checkWorkerSubSkillMatch } from '../utils/skillMapping.js';
 
 /**
  * Stage 1: Hard Filtering Gate
  * Evaluates whether a worker satisfies mandatory criteria for a service booking.
  * Implements the Ravi/Kumar dynamic slack calculation for emergency bookings.
+ * Enforces booking.subSkillId as the authoritative required skill.
  */
 export async function evaluateHardFilter({
   worker,
@@ -14,7 +16,8 @@ export async function evaluateHardFilter({
   customerLocation, // [lon, lat]
   workerLocation,   // [lon, lat]
   scheduledForDate = null,
-  cooperativeId = null
+  cooperativeId = null,
+  subSkillId = null
 }) {
   const exclusionReasons = [];
 
@@ -34,8 +37,13 @@ export async function evaluateHardFilter({
     exclusionReasons.push('ACTIVE_BOOKING_IN_PROGRESS: Worker is currently engaged on an active job');
   }
 
-  // 3. Mandatory Skill Match Check
-  if (service.requiredSkills && service.requiredSkills.length > 0) {
+  // 3. Mandatory Skill Match Check (Authoritative booking.subSkillId prioritized)
+  if (subSkillId) {
+    const isMatched = checkWorkerSubSkillMatch(worker.skills, subSkillId);
+    if (!isMatched) {
+      exclusionReasons.push(`SKILL_MISMATCH: Worker lacks required sub-skill [${subSkillId}]`);
+    }
+  } else if (service.requiredSkills && service.requiredSkills.length > 0) {
     const workerSkills = new Set(worker.skills || []);
     const missingSkills = service.requiredSkills.filter(s => !workerSkills.has(s));
     if (missingSkills.length > 0) {

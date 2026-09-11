@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, User, ChevronDown } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { Shield, User, ChevronDown, Globe } from 'lucide-react';
 
 export function Navbar() {
   const { user, switchPersona } = useAuth();
+  const { language, setLanguage, toggleLanguage, isTamil } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
@@ -18,20 +20,37 @@ export function Navbar() {
               <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">GIGNET</span>
               <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">Customer</span>
             </div>
-            <p className="text-[10px] text-slate-400 -mt-0.5 font-medium">Cooperative Workforce Network</p>
+            <p className="text-[10px] text-slate-400 -mt-0.5 font-medium">
+              {isTamil ? 'கூட்டுறவு தொழிலாளர் வலையமைப்பு' : 'Cooperative Workforce Network'}
+            </p>
           </div>
         </div>
 
-        {/* Demo Persona Switcher Dropdown */}
-        <div className="relative">
+        <div className="flex items-center gap-2">
+          {/* Reactive Language Switcher: English ↔ Tamil */}
           <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-200 transition shadow-sm"
+            id="lang-toggle-btn"
+            onClick={toggleLanguage}
+            className="flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-700/80 border border-slate-700/80 px-2 py-1.5 rounded-xl text-xs font-bold text-slate-200 transition shadow-sm cursor-pointer active:scale-95"
+            title="Toggle Language (English / தமிழ்)"
           >
-            <User className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="max-w-[100px] truncate">{user?.fullName || 'Asha (Customer)'}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <Globe className="w-3.5 h-3.5 text-sky-400" />
+            <span className={language === 'en' ? 'text-sky-400 font-extrabold' : 'text-slate-400'}>EN</span>
+            <span className="text-slate-600 text-[10px]">|</span>
+            <span className={language === 'ta' ? 'text-amber-400 font-extrabold' : 'text-slate-400'}>தமிழ்</span>
           </button>
+
+          {/* Demo Persona Switcher Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-200 transition shadow-sm"
+            >
+              <User className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="max-w-[100px] truncate">{user?.fullName || 'Asha (Customer)'}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs">
@@ -84,6 +103,8 @@ export function Navbar() {
           )}
         </div>
       </div>
-    </header>
-  );
+    </div>
+  </header>
+);
 }
+

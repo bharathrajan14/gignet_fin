@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { WorkerAuthProvider, useWorkerAuth } from './context/WorkerAuthContext';
 import { WorkerSocketProvider, useWorkerSocket } from './context/WorkerSocketContext';
+import { WorkerLanguageProvider } from './context/WorkerLanguageContext';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import { OfferModal } from './components/OfferModal';
@@ -115,10 +116,13 @@ function WorkerAppMain() {
 
 export default function App() {
   return (
-    <WorkerAuthProvider>
-      <WorkerSocketProvider>
-        <WorkerAppMain />
-      </WorkerSocketProvider>
-    </WorkerAuthProvider>
+    <WorkerLanguageProvider>
+      <WorkerAuthProvider>
+        <WorkerSocketProvider>
+          <WorkerAppMain />
+        </WorkerSocketProvider>
+      </WorkerAuthProvider>
+    </WorkerLanguageProvider>
   );
 }
+

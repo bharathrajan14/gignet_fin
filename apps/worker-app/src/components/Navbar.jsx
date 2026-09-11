@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkerAuth } from '../context/WorkerAuthContext';
+import { useWorkerLanguage } from '../context/WorkerLanguageContext';
 import { api } from '../services/api';
-import { Shield, Power, ChevronDown, User, Award, Check, Wrench, Zap, Wind, Hammer, Sparkles, Building2 } from 'lucide-react';
+import { Shield, Power, ChevronDown, User, Award, Check, Wrench, Zap, Wind, Hammer, Sparkles, Building2, Globe } from 'lucide-react';
+
 
 const TRADE_ICONS = {
   'Plumbing': Wrench,
@@ -15,10 +17,12 @@ const TRADE_ICONS = {
 
 export function Navbar() {
   const { workerProfile, switchWorkerPersona, refreshProfile } = useWorkerAuth();
+  const { language, toggleLanguage, isTamil } = useWorkerLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [personas, setPersonas] = useState([]);
   const [selectedTrade, setSelectedTrade] = useState('ALL');
+
 
   useEffect(() => {
     let isMounted = true;
@@ -78,6 +82,19 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Language Toggle: EN | தமிழ் */}
+          <button
+            id="worker-lang-toggle-btn"
+            onClick={toggleLanguage}
+            className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2 py-1.5 rounded-xl text-xs font-bold text-slate-200 transition shadow-sm cursor-pointer active:scale-95"
+            title="Toggle Language (English / தமிழ்)"
+          >
+            <Globe className="w-3.5 h-3.5 text-blue-400" />
+            <span className={language === 'en' ? 'text-sky-400 font-extrabold' : 'text-slate-400'}>EN</span>
+            <span className="text-slate-600 text-[10px]">|</span>
+            <span className={language === 'ta' ? 'text-amber-400 font-extrabold' : 'text-slate-400'}>தமிழ்</span>
+          </button>
+
           {/* Online / Offline Toggle Button */}
           <button
             disabled={toggling}
@@ -89,8 +106,9 @@ export function Navbar() {
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-            <span>{isOnline ? 'ON DUTY' : 'OFFLINE'}</span>
+            <span>{isOnline ? (isTamil ? 'பணியில்' : 'ON DUTY') : (isTamil ? 'ஆஃப்லைன்' : 'OFFLINE')}</span>
           </button>
+
 
           {/* Persona Switcher */}
           <div className="relative">

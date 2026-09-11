@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { ShieldCheck, AlertCircle, Clock, CheckCircle, XCircle, ArrowRight, Zap } from 'lucide-react';
+import { getSubServiceName, getServiceName } from '@gignet/shared';
+import { ShieldCheck, AlertCircle, Clock, CheckCircle, XCircle, ArrowRight, Zap, Sparkles, Cpu } from 'lucide-react';
+
 
 export function AllocationAuditDrawer({ booking, onClose }) {
   const [trail, setTrail] = useState([]);
+  const [bookingData, setBookingData] = useState(booking);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (booking?._id) {
+      setBookingData(booking);
       fetchTrail();
     }
   }, [booking?._id]);
@@ -18,6 +22,9 @@ export function AllocationAuditDrawer({ booking, onClose }) {
       const res = await api.get(`/admin/bookings/${booking._id}/allocation-trail`);
       if (res.data.success) {
         setTrail(res.data.data);
+        if (res.data.booking) {
+          setBookingData(res.data.booking);
+        }
       }
     } catch (err) {
       console.error('[AuditDrawer] Failed to fetch trail:', err);
@@ -27,6 +34,10 @@ export function AllocationAuditDrawer({ booking, onClose }) {
   };
 
   if (!booking) return null;
+
+  const allCandidates = trail.flatMap(t => t.candidates || []);
+  const eligibleCount = allCandidates.filter(c => !c.isExcluded).length;
+  const top10Count = Math.min(10, eligibleCount);
 
   return (
     <div className="fixed inset-0 z-[9999] flex justify-end">
@@ -61,13 +72,92 @@ export function AllocationAuditDrawer({ booking, onClose }) {
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         {loading ? (
           <div className="py-20 text-center text-xs text-slate-500 font-bold">Loading audit telemetry...</div>
-        ) : trail.length === 0 ? (
-          <div className="py-20 text-center text-xs text-slate-500 font-bold">
-            No allocation runs recorded for this booking yet.
-          </div>
         ) : (
-          trail.map(({ run, candidates }, runIdx) => (
-            <div key={run._id} className="bg-slate-950 rounded-3xl border border-slate-800 p-5 space-y-4">
+          <>
+            {/* AI Problem Classification Audit Card */}
+            <div className="bg-slate-950 rounded-3xl border border-sky-500/30 p-5 space-y-4 shadow-xl shadow-sky-950/20">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-sky-400">
+                      AI Problem Classification Audit
+                    </span>
+                    <h3 className="text-sm font-extrabold text-white mt-0.5">
+                      DistilBERT Sequence Classifier
+                    </h3>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
+                  Model: {bookingData?.classificationSource || 'DistilBERT'} ({bookingData?.modelVersion || 'v1'})
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="space-y-1 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                    Customer Description:
+                  </span>
+                  <p className="font-semibold text-white bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 italic min-h-[44px]">
+                    "{bookingData?.problemDescription || 'No description provided'}"
+                  </p>
+                </div>
+
+                <div className="space-y-1 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                    Prediction (Required subSkillId):
+                  </span>
+                  <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 space-y-1 min-h-[44px] flex flex-col justify-center">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="font-extrabold text-sky-300 font-mono text-xs block truncate">
+                          {bookingData?.subSkillId || 'Standard Service'}
+                        </span>
+                        {bookingData?.subSkillId && (
+                          <span className="text-[10px] text-slate-300 font-medium block truncate">
+                            {getSubServiceName(bookingData.subSkillId, 'en')} • {getSubServiceName(bookingData.subSkillId, 'ta')}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-black text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800 shrink-0">
+                        {bookingData?.classificationConfidence 
+                          ? `${(bookingData.classificationConfidence * 100).toFixed(0)}% Conf.` 
+                          : 'Default'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Allocation Pipeline Summary */}
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-center">
+                <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Eligible Workers</span>
+                  <span className="text-base font-black text-emerald-400 block mt-0.5">{eligibleCount}</span>
+                </div>
+                <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">TOP 10 Pool</span>
+                  <span className="text-base font-black text-sky-400 block mt-0.5">{top10Count}</span>
+                </div>
+                <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Allocation Result</span>
+                  <span className="text-xs font-black text-white block mt-1">
+                    {(bookingData || booking).bookingType === 'EMERGENCY' ? 'Speed Dominates' : 'Fairness Dominates'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {trail.length === 0 ? (
+              <div className="py-20 text-center text-xs text-slate-500 font-bold">
+                No allocation runs recorded for this booking yet.
+              </div>
+            ) : (
+              trail.map(({ run, candidates }, runIdx) => (
+                <div key={run._id} className="bg-slate-950 rounded-3xl border border-slate-800 p-5 space-y-4">
               {/* Run Stage Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
                 <div>
@@ -192,6 +282,8 @@ export function AllocationAuditDrawer({ booking, onClose }) {
             </div>
           ))
         )}
+      </>
+      )}
       </div>
     </div>
   </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import { HomePage } from './pages/HomePage';
@@ -92,10 +93,13 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <MainApp />
-      </SocketProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <MainApp />
+        </SocketProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
+

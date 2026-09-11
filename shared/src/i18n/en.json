@@ -1,0 +1,321 @@
+{
+  "services": {
+    "plumber": "Plumbing",
+    "electrician": "Electrical",
+    "carpenter": "Carpentry",
+    "mechanic": "Mechanic",
+    "driver": "Driver",
+    "appliance": "Appliance Repair",
+    "cleaning": "Home Cleaning",
+    "masonry": "Painting & Waterproofing"
+  },
+  "subServices": {
+    "plumber_pipe_leakage": "Pipe Leakage",
+    "plumber_tap_leakage": "Tap Leakage",
+    "plumber_drain_blockage": "Drain Blockage",
+    "plumber_toilet_repair": "Toilet Repair",
+    "plumber_water_pump_repair": "Water Pump Repair",
+    "plumber_bathroom_fitting": "Bathroom Fitting",
+
+    "electrician_fan": "Fan Repair",
+    "electrician_washing_machine": "Washing Machine",
+    "electrician_kitchen_items": "Kitchen Appliances",
+    "electrician_installation": "Fixture Installation",
+    "electrician_wiring": "Wiring & Circuit",
+
+    "carpenter_door_repair": "Door Repair",
+    "carpenter_furniture_repair": "Furniture Repair",
+    "carpenter_cupboard_repair": "Cupboard Repair",
+    "carpenter_bed_repair": "Bed Repair",
+    "carpenter_shelf_installation": "Shelf Installation",
+
+    "mechanic_brake_repair": "Brake Repair",
+    "mechanic_engine_problem": "Engine Problem",
+    "mechanic_clutch_problem": "Clutch Problem",
+    "mechanic_battery_problem": "Battery Problem",
+    "mechanic_tyre_puncture": "Tyre Puncture",
+
+    "driver_airport_transport": "Airport Transport",
+    "driver_local_trip": "Local Trip",
+    "driver_outstation_trip": "Outstation Trip",
+    "driver_parcel_delivery": "Parcel Delivery",
+    "driver_goods_transport": "Goods Transport"
+  },
+  "serviceCards": {
+    "plumber": {
+      "name": "Plumbing",
+      "shortDesc": "Emergency leak fixes, pipe bursts, bathroom and kitchen tap repairs",
+      "startingPrice": 199,
+      "duration": "30–45 mins"
+    },
+    "electrician": {
+      "name": "Electrical",
+      "shortDesc": "Switchboard repair, short circuit fixes, fan/light wiring and power surge diagnosis",
+      "startingPrice": 249,
+      "duration": "30–60 mins"
+    },
+    "carpenter": {
+      "name": "Carpentry",
+      "shortDesc": "Door latch repair, furniture assembly, hinge realignment and cabinet fabrication",
+      "startingPrice": 249,
+      "duration": "1–2 hours"
+    },
+    "mechanic": {
+      "name": "Mechanic",
+      "shortDesc": "Emergency tyre puncture, battery jumpstart, brake diagnostics & engine inspection",
+      "startingPrice": 299,
+      "duration": "30–45 mins"
+    },
+    "driver": {
+      "name": "Driver",
+      "shortDesc": "Verified on-demand drivers for airport runs, city point-to-point, or outstation travel",
+      "startingPrice": 349,
+      "duration": "On Demand"
+    },
+    "appliance": {
+      "name": "Appliance Repair",
+      "shortDesc": "Washing machine motor fix, refrigerator cooling issues, microwave diagnosis",
+      "startingPrice": 299,
+      "duration": "45–60 mins"
+    },
+    "cleaning": {
+      "name": "Home Cleaning",
+      "shortDesc": "Deep kitchen scrubbing, bathroom sanitization, floor buffing and disinfection",
+      "startingPrice": 349,
+      "duration": "2–3 hours"
+    },
+    "masonry": {
+      "name": "Painting & Waterproofing",
+      "shortDesc": "Wall seepage treatment, touch-up painting, roof waterproofing coat application",
+      "startingPrice": 499,
+      "duration": "3–4 hours"
+    }
+  },
+  "serviceDescriptions": {
+    "plumber": "Urgent pipeline burst, tap flood, drainage blockage, and comprehensive sanitary fitting requiring immediate response.",
+    "electrician": "Certified cooperative electrician for switchboards, short circuits, MCB replacement, and concealed wiring diagnostics.",
+    "carpenter": "Skilled woodwork specialists for door hinges, bed frame repairs, customized shelving, and wardrobe alignment.",
+    "mechanic": "On-spot vehicle recovery, puncture patching, brake pad inspections, clutch issues, and emergency battery replacement.",
+    "driver": "Licensed cooperative commercial drivers for prompt airport transfers, local city errands, and long-distance travel.",
+    "appliance": "Diagnostic and hardware restoration for domestic washing machines, refrigerators, microwaves, and appliances.",
+    "cleaning": "Hospital-grade deep cleaning, tile scrubbing, kitchen grease removal, and comprehensive home sanitization.",
+    "masonry": "Weatherproof roof coating, damp wall treatment, exterior touch-up painting, and structural crack injection."
+  },
+  "bookingTypes": {
+    "EMERGENCY": "Emergency Service",
+    "SCHEDULED": "Scheduled Service"
+  },
+  "bookingStatuses": {
+    "DRAFT": "Draft",
+    "SEARCHING": "Searching",
+    "OFFERED": "Offered",
+    "CONFIRMED": "Confirmed",
+    "ON_THE_WAY": "On The Way",
+    "ARRIVED": "Arrived",
+    "IN_PROGRESS": "In Progress",
+    "COMPLETED": "Completed",
+    "PAID": "Paid",
+    "CANCELLED": "Cancelled"
+  },
+  "emergency": {
+    "badge": "URGENT SLA",
+    "title": "Emergency Service Needed?",
+    "subtitle": "Pipeline burst, power failure, short circuit? Dispatched under 15 mins.",
+    "sosBtn": "Instant SOS",
+    "offerTitle": "⚡ Emergency Job Offer"
+  },
+  "scheduled": {
+    "title": "Scheduled Service",
+    "offerTitle": "📅 Scheduled Job Offer",
+    "subtitle": "Pre-book a verified cooperative specialist at your preferred time slot."
+  },
+  "ai": {
+    "describeTitle": "Describe the problem",
+    "describePlaceholder": "e.g. Kitchen pipe is leaking badly, ceiling fan not spinning, car tyre punctured...",
+    "analyzeBtn": "Analyze Problem",
+    "analyzing": "Analyzing Problem with DistilBERT...",
+    "detectedProblem": "AI Detected Problem",
+    "subSkillLabel": "subSkillId",
+    "confidenceLabel": "Confidence",
+    "confirm": "Confirm",
+    "confirmed": "Confirmed",
+    "change": "Change",
+    "selectSubSkill": "Select Specific Sub-Skill:",
+    "lowConfidenceWarning": "We're not fully confident about this problem. Please confirm or select from manual list below.",
+    "categoryMismatchTitle": "Category Mismatch Detected",
+    "categoryMismatchDesc": "You selected {selectedCategory}, but our AI detected a {detectedCategory} issue ({displayName}). Please review your selection."
+  },
+  "workerSkills": {
+    "plumber_pipe_leakage": {
+      "name": "Pipe Leakage",
+      "desc": "Concealed pipe burst, high pressure line leakage, and joint sealing"
+    },
+    "plumber_tap_leakage": {
+      "name": "Tap Leakage",
+      "desc": "Faucet spindle replacement, thread seal, and mixer tap maintenance"
+    },
+    "plumber_drain_blockage": {
+      "name": "Drain Blockage",
+      "desc": "Sewer line blockage clearance, trap cleaning, and drain de-clogging"
+    },
+    "plumber_toilet_repair": {
+      "name": "Toilet Repair",
+      "desc": "Sanitary cistern repair, flush valve overhaul, and seal replacement"
+    },
+    "plumber_water_pump_repair": {
+      "name": "Water Pump Repair",
+      "desc": "Submersible & monoblock pump priming, impeller check, and motor repair"
+    },
+    "plumber_bathroom_fitting": {
+      "name": "Bathroom Fitting",
+      "desc": "Shower installation, diverter fixing, sanitary ware mounting"
+    },
+
+    "electrician_fan": {
+      "name": "Fan Repair",
+      "desc": "Ceiling fan capacitor replacement, bearing overhaul, and hanging assembly"
+    },
+    "electrician_washing_machine": {
+      "name": "Washing Machine",
+      "desc": "Motor electrical wiring check, timer knob repair, power surge protection"
+    },
+    "electrician_kitchen_items": {
+      "name": "Kitchen Appliances",
+      "desc": "Induction stove circuit fix, mixer grinder coil rewinding, microwave safety"
+    },
+    "electrician_installation": {
+      "name": "Fixture Installation",
+      "desc": "Switchboard installation, LED panel fixing, MCB distribution box wiring"
+    },
+    "electrician_wiring": {
+      "name": "Wiring & Circuit",
+      "desc": "Short circuit fault finding, concealed wiring installation, earth wire check"
+    },
+
+    "carpenter_door_repair": {
+      "name": "Door Repair",
+      "desc": "Door latch alignment, hinge replacement, lock installation & trimming"
+    },
+    "carpenter_furniture_repair": {
+      "name": "Furniture Repair",
+      "desc": "Wooden joint reinforcement, surface polish restoration, chair leg fixing"
+    },
+    "carpenter_cupboard_repair": {
+      "name": "Cupboard Repair",
+      "desc": "Sliding wardrobe channel fix, hydraulic hinge alignment, magnetic catch"
+    },
+    "carpenter_bed_repair": {
+      "name": "Bed Repair",
+      "desc": "Bed frame creak stabilization, hydraulic lift maintenance, headboard fix"
+    },
+    "carpenter_shelf_installation": {
+      "name": "Shelf Installation",
+      "desc": "Heavy duty wall bracket fixing, wooden shelf mounting, corner unit setup"
+    },
+
+    "mechanic_brake_repair": {
+      "name": "Brake Repair",
+      "desc": "Brake shoe/pad replacement, caliper fluid bleeding, disc inspection"
+    },
+    "mechanic_engine_problem": {
+      "name": "Engine Problem",
+      "desc": "Engine overheating troubleshooting, coolant leak fix, spark plug cleanup"
+    },
+    "mechanic_clutch_problem": {
+      "name": "Clutch Problem",
+      "desc": "Clutch wire tension adjustment, plate friction inspection, gear slip repair"
+    },
+    "mechanic_battery_problem": {
+      "name": "Battery Problem",
+      "desc": "Emergency jumpstart, terminal corrosion cleaning, battery replacement"
+    },
+    "mechanic_tyre_puncture": {
+      "name": "Tyre Puncture",
+      "desc": "Tubeless tyre puncture sealing, tube patch vulcanizing, air valve repair"
+    },
+
+    "driver_airport_transport": {
+      "name": "Airport Transport",
+      "desc": "Guaranteed timely pickup, luggage handling, direct terminal route transit"
+    },
+    "driver_local_trip": {
+      "name": "Local Trip",
+      "desc": "City point-to-point trip, peak hour traffic navigation, verified driver"
+    },
+    "driver_outstation_trip": {
+      "name": "Outstation Trip",
+      "desc": "Intercity round trips, highway driving expertise, day/night journey care"
+    },
+    "driver_parcel_delivery": {
+      "name": "Parcel Delivery",
+      "desc": "Secure package delivery, instant OTP verification, swift point transit"
+    },
+    "driver_goods_transport": {
+      "name": "Goods Transport",
+      "desc": "Commercial utility transport, careful cargo loading, logistical tracking"
+    },
+
+    "PLUMBING_BASIC": {
+      "name": "General Plumbing",
+      "desc": "Certified foundational piping and domestic leak repairs"
+    },
+    "ELECTRICAL_SAFETY": {
+      "name": "Electrical Safety",
+      "desc": "Certified domestic power grid safety and hazard prevention"
+    },
+    "CARPENTRY_SKILL": {
+      "name": "General Carpentry",
+      "desc": "Verified joinery and woodworking craftsmanship"
+    },
+    "MECHANIC_BASIC": {
+      "name": "Automotive Maintenance",
+      "desc": "Routine vehicle servicing, fluids and emergency roadside repairs"
+    },
+    "DRIVER_COMMERCIAL": {
+      "name": "Commercial Driving",
+      "desc": "Heavy and commercial transport driving license and certification"
+    }
+  },
+  "ui": {
+    "serviceCategories": "Service Categories",
+    "servicesAvailable": "14 Services Available",
+    "recommendedServices": "Recommended Services",
+    "verifiedCooperative": "Verified Cooperative",
+    "searchPlaceholder": "Search 14+ services (e.g. AC repair, tap leak, CCTV)...",
+    "startingAt": "STARTING AT",
+    "typicalTime": "TYPICAL TIME",
+    "rating": "RATING",
+    "repairOptions": "Available Repair Options",
+    "selectedCount": "Selected",
+    "serviceLocation": "Service Location",
+    "detectingGps": "Detecting...",
+    "useDeviceGps": "📍 Use Device GPS",
+    "middlemanZero": "0% Middleman",
+    "cooperativeBadge": "COOPERATIVE VERIFIED SERVICE",
+    "societyName": "Bengaluru South Labour Welfare Cooperative",
+    "liveSync": "Cross-App Live Sync Active",
+    "activeBookingBanner": "Active Booking in Progress",
+    "activeBookingSub": "Tap to view live technician map & bill",
+    "track": "Track",
+    "historyTitle": "Service History",
+    "historyCount": "Bookings",
+    "noHistory": "No past bookings yet",
+    "noHistorySub": "Your completed cooperative service receipts will appear here.",
+    "serviceLabel": "Service",
+    "subServiceLabel": "Sub-Service",
+    "statusLabel": "Status",
+    "bookingTypeLabel": "Type",
+    "dateLabel": "Date",
+    "amountLabel": "Total Amount",
+    "technicianAssigned": "Technician Assigned",
+    "technicianDistance": "Technician Distance",
+    "scanningRadius": "Scanning progressive 2dsphere radius (3km → 6km → 12km) and matching verified skills & availability.",
+    "technicianIdentified": "Technician Identified!",
+    "awaitingAcceptance": "Dispatching 45-second offer countdown to cooperative technician. Awaiting acceptance...",
+    "acceptJob": "Accept Job",
+    "declineJob": "Decline",
+    "verifiedSkills": "Verified Skills & Trade Certifications",
+    "verifiedSkillsSub": "Accredited under National Skill Qualification Framework (NSQF)",
+    "activeMember": "Active Member"
+  }
+}

@@ -98,6 +98,8 @@ export async function getAllocationTrail(req, res) {
   try {
     const { id: bookingId } = req.params;
 
+    const booking = await Booking.findById(bookingId).populate('serviceId').populate('customerId');
+
     const runs = await AllocationRun.find({ bookingId })
       .sort({ runNumber: 1 })
       .populate('selectedWorkerId');
@@ -116,7 +118,7 @@ export async function getAllocationTrail(req, res) {
       candidates: candidates.filter(c => String(c.allocationRunId) === String(run._id))
     }));
 
-    return res.status(200).json({ success: true, data: trail });
+    return res.status(200).json({ success: true, data: trail, booking });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }

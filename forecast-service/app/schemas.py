@@ -30,3 +30,19 @@ class ForecastResponse(BaseModel):
     sharing_recommendation: Optional[str] = None
     daily_breakdown: List[DailyForecastItem]
     model_metadata: Dict[str, str]
+
+class ProblemPredictRequest(BaseModel):
+    description: str = Field(..., description="Customer natural-language problem description")
+
+class PredictionCandidate(BaseModel):
+    predictedLabel: str
+    subSkillId: str
+    confidence: float
+
+class ProblemPredictResponse(BaseModel):
+    predictedLabel: str
+    subSkillId: str
+    confidence: float
+    source: str = "distilbert"
+    modelVersion: str = "v1"
+    topPredictions: Optional[List[PredictionCandidate]] = []

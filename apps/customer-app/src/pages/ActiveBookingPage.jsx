@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useSocket } from '../context/SocketContext';
+import { useLanguage } from '../context/LanguageContext';
 import { LeafletMap } from '../components/LeafletMap';
 import {
   ShieldCheck,
@@ -19,7 +20,9 @@ import {
 } from 'lucide-react';
 
 export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted }) {
+  const { isTamil, t, getServiceName, getSubServiceName, getBookingStatusName, getBookingTypeName } = useLanguage();
   const [booking, setBooking] = useState(initialBooking);
+
   const [invoice, setInvoice] = useState(null);
   const [workerCoords, setWorkerCoords] = useState(null); // [lat, lon]
   const [travelStats, setTravelStats] = useState({ remainingKm: null, etaMinutes: null });
@@ -188,10 +191,17 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
       <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 shadow-lg flex items-center justify-between">
         <div>
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{booking.bookingNumber}</span>
-          <h2 className="font-black text-white text-base mt-0.5">{booking.serviceId?.name || 'Service Booking'}</h2>
+          <h2 className="font-black text-white text-base mt-0.5">
+            {getServiceName(booking.serviceCategory || booking.serviceId?.category || booking.serviceId?.name || 'plumber')}
+          </h2>
+          {booking.subSkillId && (
+            <p className="text-[11px] text-sky-400 font-bold mt-0.5">
+              {getSubServiceName(booking.subSkillId)}
+            </p>
+          )}
         </div>
         <span className={`text-xs font-black uppercase px-3 py-1.5 rounded-xl border ${statusBadgeColor}`}>
-          {booking.status.replace(/_/g, ' ')}
+          {getBookingStatusName(booking.status)}
         </span>
       </div>
 
@@ -206,9 +216,11 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
             </div>
           </div>
           <div>
-            <h3 className="font-black text-base text-white">Progressive Cooperative Dispatch</h3>
+            <h3 className="font-black text-base text-white">
+              {isTamil ? 'முற்போக்கான கூட்டுறவு பணி ஒதுக்கீடு' : 'Progressive Cooperative Dispatch'}
+            </h3>
             <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-              Scanning progressive 2dsphere radius (3km → 6km → 12km) and matching verified skills & availability.
+              {t('ui.scanningRadius', 'Scanning progressive 2dsphere radius (3km → 6km → 12km) and matching verified skills & availability.')}
             </p>
           </div>
         </div>
@@ -219,12 +231,15 @@ export function ActiveBookingPage({ booking: initialBooking, onBookingCompleted 
           <div className="w-14 h-14 bg-blue-500 text-slate-950 rounded-full mx-auto flex items-center justify-center animate-bounce shadow-lg shadow-blue-500/50">
             <Clock className="w-7 h-7" />
           </div>
-          <h3 className="font-black text-base text-white">Technician Identified!</h3>
+          <h3 className="font-black text-base text-white">
+            {t('ui.technicianIdentified', 'Technician Identified!')}
+          </h3>
           <p className="text-xs text-blue-300">
-            Dispatching 45-second offer countdown to cooperative technician. Awaiting acceptance...
+            {t('ui.awaitingAcceptance', 'Dispatching 45-second offer countdown to cooperative technician. Awaiting acceptance...')}
           </p>
         </div>
       )}
+
 
       {/* Map Tracking View (shown when assigned, en route, arrived, in progress) */}
       {['CONFIRMED', 'ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS', 'COMPLETED', 'PAID'].includes(booking.status) && (

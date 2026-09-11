@@ -107,3 +107,7 @@ export const H3_RESOLUTIONS = Object.freeze({
   COOPERATIVE_BOUNDARY: 7, // ~1.22 km edge length hex
   MICRO_CLUSTER: 8         // ~461 m edge length hex
 });
+
+// Centralized Multilingual Service Catalog Internationalization
+export * from './src/i18n/catalogI18n.js';
+

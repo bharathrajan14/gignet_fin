@@ -90,6 +90,7 @@ export async function runAllocation(bookingId, { radiusIndex = 0, candidateIndex
     const hardFilterResult = await evaluateHardFilter({
       worker: item.worker,
       service,
+      subSkillId: booking.subSkillId,
       bookingType: booking.bookingType,
       customerLocation: booking.customerLocation.coordinates,
       workerLocation: item.workerLocation,

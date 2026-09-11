@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getServices,
+  classifyProblem,
   createBooking,
   getBookingDetails,
   getActiveBooking,
@@ -13,6 +14,7 @@ import { authenticate } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.get('/services', getServices);
+router.post('/classify-problem', classifyProblem);
 
 // Authenticated routes
 router.use(authenticate);

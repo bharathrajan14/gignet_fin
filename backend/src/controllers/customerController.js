@@ -10,12 +10,94 @@ import BookingEvent from '../models/BookingEvent.js';
 import { runAllocation } from '../allocation/allocationEngine.js';
 import { toH3 } from '../utils/geoUtils.js';
 import { getSocketIO } from '../services/socketService.js';
+import { validateCategoryMatch, CANONICAL_SUB_SKILLS } from '../utils/skillMapping.js';
 
 export async function getServices(req, res) {
   try {
     const services = await Service.find({ isActive: true });
     return res.status(200).json({ success: true, data: services });
   } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+/**
+ * Classify customer problem description through ML inference service
+ * Handles category validation and fallback resilience.
+ */
+export async function classifyProblem(req, res) {
+  try {
+    const { description, serviceCategory = '' } = req.body;
+    if (!description || !description.trim()) {
+      return res.status(400).json({ success: false, message: 'Problem description is required.' });
+    }
+
+    const mlServiceUrl = process.env.ML_SERVICE_URL || process.env.FORECAST_SERVICE_URL || 'http://localhost:8000';
+    let mlResponse = null;
+
+    try {
+      const response = await fetch(`${mlServiceUrl}/predict-problem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: description.trim() })
+      });
+
+      if (response.ok) {
+        mlResponse = await response.json();
+      } else {
+        const errBody = await response.text();
+        console.error(`[CustomerController] ML Service returned status ${response.status}:`, errBody);
+      }
+    } catch (mlErr) {
+      console.warn(`[CustomerController] ML service connection failed at ${mlServiceUrl}: ${mlErr.message}`);
+    }
+
+    if (!mlResponse) {
+      // Graceful fallback - never block the customer booking flow
+      return res.status(200).json({
+        success: true,
+        data: {
+          predictedLabel: '',
+          subSkillId: '',
+          confidence: 0,
+          source: 'fallback',
+          modelVersion: 'none',
+          categoryMismatch: false,
+          displayName: 'Manual Review',
+          isConfident: false,
+          message: 'Classification service temporarily unavailable. Please proceed with manual option selection.'
+        }
+      });
+    }
+
+    const { predictedLabel, subSkillId, confidence, source, modelVersion, topPredictions } = mlResponse;
+
+    // Validate category match against customer's selected service category
+    const categoryValidation = validateCategoryMatch(serviceCategory, subSkillId);
+    const subSkillMeta = CANONICAL_SUB_SKILLS[subSkillId] || {};
+    const ML_CONFIDENCE_THRESHOLD = 0.70;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        predictedLabel,
+        subSkillId,
+        confidence,
+        source: source || 'distilbert',
+        modelVersion: modelVersion || 'v1',
+        displayName: subSkillMeta.displayName || predictedLabel,
+        topPredictions: (topPredictions || []).map(p => ({
+          ...p,
+          displayName: CANONICAL_SUB_SKILLS[p.subSkillId]?.displayName || p.subSkillId
+        })),
+        categoryMismatch: categoryValidation.categoryMismatch,
+        expectedCategory: categoryValidation.selectedCategory,
+        detectedCategory: categoryValidation.detectedCategory,
+        isConfident: confidence >= ML_CONFIDENCE_THRESHOLD
+      }
+    });
+  } catch (err) {
+    console.error('[CustomerController] classifyProblem error:', err);
     return res.status(500).json({ success: false, message: err.message });
   }
 }
@@ -27,7 +109,13 @@ export async function createBooking(req, res) {
       bookingType = 'EMERGENCY',
       customerLocation, // [lon, lat]
       addressText = '12th Main, Koramangala 4th Block, Bengaluru',
-      scheduledFor = null
+      scheduledFor = null,
+      problemDescription = '',
+      serviceCategory = '',
+      subSkillId = '',
+      classificationConfidence = 0,
+      classificationSource = '',
+      modelVersion = ''
     } = req.body;
 
     if (!serviceId || !customerLocation || !Array.isArray(customerLocation)) {
@@ -91,6 +179,15 @@ export async function createBooking(req, res) {
       h3Res7,
       h3Res8,
       scheduledFor: bookingType === 'SCHEDULED' ? (scheduledFor ? new Date(scheduledFor) : new Date(Date.now() + 7200000)) : null,
+      
+      // Persist AI Problem Classification Metadata
+      problemDescription: problemDescription.trim(),
+      serviceCategory: serviceCategory || service.category,
+      subSkillId: subSkillId || '',
+      classificationConfidence: typeof classificationConfidence === 'number' ? classificationConfidence : 0,
+      classificationSource: classificationSource || (subSkillId ? 'distilbert' : ''),
+      modelVersion: modelVersion || (subSkillId ? 'v1' : ''),
+
       pricing: {
         baseAmount,
         emergencySurcharge,
@@ -111,7 +208,7 @@ export async function createBooking(req, res) {
       toStatus: 'SEARCHING',
       actorId: req.user.id,
       actorRole: 'CUSTOMER',
-      reason: `Customer requested ${bookingType} service booking.`
+      reason: `Customer requested ${bookingType} service booking.` + (subSkillId ? ` [Problem: ${subSkillId}]` : '')
     });
 
     // Notify Admin live feed via Socket.IO
@@ -122,6 +219,9 @@ export async function createBooking(req, res) {
         bookingNumber: booking.bookingNumber,
         bookingType: booking.bookingType,
         serviceName: service.name,
+        problemDescription: booking.problemDescription,
+        subSkillId: booking.subSkillId,
+        classificationConfidence: booking.classificationConfidence,
         coordinates: customerLocation,
         addressText,
         totalAmount
