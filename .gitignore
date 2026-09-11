@@ -40,3 +40,7 @@ pnpm-debug.log*
 *.swo
 .DS_Store
 Thumbs.db
+
+# ML Model large binaries (>100MB, excluded from GitHub)
+*.safetensors
+training_args.bin
