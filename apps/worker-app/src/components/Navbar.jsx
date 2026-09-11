@@ -15,13 +15,20 @@ const TRADE_ICONS = {
   'General Utility': Wrench
 };
 
-export function Navbar() {
+export function Navbar({ pendingOffer }) {
   const { workerProfile, switchWorkerPersona, refreshProfile } = useWorkerAuth();
   const { language, toggleLanguage, isTamil } = useWorkerLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [personas, setPersonas] = useState([]);
   const [selectedTrade, setSelectedTrade] = useState('ALL');
+  const [prevOfferId, setPrevOfferId] = useState(null);
+
+  // Extract the assigned worker badge from the dispatched offer
+  const assignedBadge = pendingOffer?.assignedWorkerBadge
+    || pendingOffer?.details?.assignedWorkerBadge
+    || pendingOffer?.workerBadge
+    || null;
 
 
   useEffect(() => {
@@ -39,6 +46,23 @@ export function Navbar() {
     loadPersonas();
     return () => { isMounted = false; };
   }, []);
+
+  // Auto-open persona switcher when a NEW offer arrives so demo viewers immediately see the highlight
+  useEffect(() => {
+    const newOfferId = pendingOffer?.offerId || pendingOffer?._id;
+    if (newOfferId && newOfferId !== prevOfferId) {
+      setPrevOfferId(newOfferId);
+      setDropdownOpen(true);
+      // Scroll to and flash the assigned worker trade filter
+      if (assignedBadge) {
+        const assignedPersona = personas.find(p => p.badgeNumber === assignedBadge);
+        if (assignedPersona?.trade) setSelectedTrade(assignedPersona.trade);
+      }
+    }
+    if (!pendingOffer) {
+      setPrevOfferId(null);
+    }
+  }, [pendingOffer?.offerId, pendingOffer?._id]);
 
   const handleToggleOnline = async () => {
     try {
@@ -114,11 +138,18 @@ export function Navbar() {
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-1.5 text-slate-300 transition text-xs font-bold"
+              className={`px-2.5 py-1.5 rounded-lg border flex items-center gap-1.5 transition text-xs font-bold relative ${
+                assignedBadge
+                  ? 'bg-amber-900/40 hover:bg-amber-900/60 border-amber-500/60 text-amber-300 ring-1 ring-amber-500/40'
+                  : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
+              }`}
               title="Switch Worker Persona"
             >
-              <User className="w-3.5 h-3.5 text-blue-400" />
-              <span className="hidden sm:inline">Switch</span>
+              {assignedBadge && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-slate-950 animate-ping" />
+              )}
+              <User className={`w-3.5 h-3.5 ${assignedBadge ? 'text-amber-400' : 'text-blue-400'}`} />
+              <span className="hidden sm:inline">{assignedBadge ? 'Job Assigned!' : 'Switch'}</span>
               <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
 
@@ -159,6 +190,7 @@ export function Navbar() {
                 <div className="max-h-72 overflow-y-auto divide-y divide-slate-800/60 py-1">
                   {filteredPersonas.map((p) => {
                     const isCurrent = workerProfile?.badgeNumber === p.badgeNumber;
+                    const isAssigned = assignedBadge && p.badgeNumber === assignedBadge;
                     const IconComp = TRADE_ICONS[p.trade] || Wrench;
                     const isBalanced = p.workloadStatus === 'BALANCED' || p.workloadStatus === 'UNDERUTILIZED';
                     const isOverloaded = p.workloadStatus === 'OVERLOADED';
@@ -170,22 +202,43 @@ export function Navbar() {
                           setDropdownOpen(false);
                           await switchWorkerPersona(p.badgeNumber);
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-800/80 flex items-center justify-between transition ${
-                          isCurrent ? 'bg-blue-950/40 border-l-2 border-blue-500' : ''
+                        className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-800/80 flex items-center justify-between transition relative ${
+                          isAssigned
+                            ? 'bg-amber-950/40 border-l-2 border-amber-400 ring-1 ring-amber-500/40'
+                            : isCurrent
+                            ? 'bg-blue-950/40 border-l-2 border-blue-500'
+                            : ''
                         }`}
                       >
+                        {/* Pulsing glow strip for assigned worker */}
+                        {isAssigned && (
+                          <span className="absolute inset-0 rounded pointer-events-none animate-pulse bg-amber-400/5" />
+                        )}
+
                         <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 ${
-                            isCurrent ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300'
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 relative ${
+                            isAssigned
+                              ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/40 ring-2 ring-amber-300/60'
+                              : isCurrent
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-slate-800 text-slate-300'
                           }`}>
                             <IconComp className="w-3.5 h-3.5" />
+                            {/* Ping dot for assigned worker */}
+                            {isAssigned && (
+                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-slate-900 animate-ping" />
+                            )}
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className={`font-bold truncate ${isCurrent ? 'text-blue-300' : 'text-slate-200'}`}>
+                              <span className={`font-bold truncate ${
+                                isAssigned ? 'text-amber-300' : isCurrent ? 'text-blue-300' : 'text-slate-200'
+                              }`}>
                                 {p.fullName}
                               </span>
-                              <span className="text-[9px] px-1 py-0.2 bg-slate-800 text-slate-400 rounded font-mono">
+                              <span className={`text-[9px] px-1 py-0.5 rounded font-mono ${
+                                isAssigned ? 'bg-amber-900/60 text-amber-300 border border-amber-700' : 'bg-slate-800 text-slate-400'
+                              }`}>
                                 {p.badgeNumber}
                               </span>
                             </div>
@@ -200,7 +253,11 @@ export function Navbar() {
                         </div>
 
                         <div className="flex items-center gap-1 shrink-0">
-                          {isCurrent ? (
+                          {isAssigned ? (
+                            <span className="text-[10px] bg-amber-500/20 text-amber-300 font-black px-1.5 py-0.5 rounded border border-amber-500/50 flex items-center gap-0.5 animate-pulse">
+                              🔔 JOB OFFER
+                            </span>
+                          ) : isCurrent ? (
                             <span className="text-[10px] bg-blue-500/20 text-blue-400 font-bold px-1.5 py-0.5 rounded border border-blue-500/30 flex items-center gap-0.5">
                               <Check className="w-2.5 h-2.5" /> Active
                             </span>

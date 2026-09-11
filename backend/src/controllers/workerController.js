@@ -118,7 +118,10 @@ export async function getPendingOffers(req, res) {
     return res.status(200).json({
       success: true,
       data: {
-        offer,
+        offer: {
+          ...offer.toObject(),
+          assignedWorkerBadge: worker.badgeNumber || null
+        },
         remainingSeconds
       }
     });

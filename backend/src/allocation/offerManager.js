@@ -70,7 +70,8 @@ export async function dispatchOffer({
       estimatedPayout,
       addressText: booking.addressText,
       expiresAt: expiresAt.toISOString(),
-      countdownSeconds: OFFER_COUNTDOWN_SECONDS
+      countdownSeconds: OFFER_COUNTDOWN_SECONDS,
+      assignedWorkerBadge: worker?.badgeNumber || null
     });
 
     // Notify customer app: finding worker / offered

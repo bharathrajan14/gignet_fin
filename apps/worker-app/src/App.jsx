@@ -78,7 +78,7 @@ function WorkerAppMain() {
   return (
     <div className="min-h-screen bg-slate-900 flex justify-center">
       <div className="w-full max-w-md bg-slate-950 min-h-screen shadow-2xl flex flex-col relative border-x border-slate-800">
-        <Navbar />
+        <Navbar pendingOffer={pendingOffer} />
 
         <main className="flex-1 overflow-y-auto">
           {activeTab === 'duty' && <DutyDashboard pendingOffer={pendingOffer} />}
